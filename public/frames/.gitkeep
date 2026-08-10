@@ -1,0 +1,3 @@
+# Real rendered sequences drop into public/frames/<name>/frame_000.webp ...
+# See ASSETS.md. Empty by design: the crane and truck are layered photoreal
+# rigs now, not frame sequences.

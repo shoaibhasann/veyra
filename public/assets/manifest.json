@@ -1,0 +1,266 @@
+{
+  "truckSide": {
+    "w": 2688,
+    "h": 1536,
+    "contentBox": { "x": 0.093006, "y": 0.261719, "w": 0.796503, "h": 0.432292 },
+    "wheels": [
+      { "cx": 0.170223, "cy": 0.637266, "r": 0.032426 },
+      { "cx": 0.245889, "cy": 0.637839, "r": 0.031726 },
+      { "cx": 0.511909, "cy": 0.637702, "r": 0.031432 },
+      { "cx": 0.588646, "cy": 0.637786, "r": 0.031012 },
+      { "cx": 0.821098, "cy": 0.637376, "r": 0.030130 }
+    ],
+    "deck": {
+      "y": 0.547266,
+      "x0": 0.093750,
+      "x1": 0.590774
+    }
+  },
+
+  "truckEmpty": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.093750, "y": 0.270182, "w": 0.795588, "h": 0.423828 },
+    "wheels": [
+      { "cx": 0.169779, "cy": 0.637695, "r": 0.032169 },
+      { "cx": 0.245772, "cy": 0.637695, "r": 0.031801 },
+      { "cx": 0.511765, "cy": 0.638021, "r": 0.030882 },
+      { "cx": 0.588603, "cy": 0.637891, "r": 0.030588 },
+      { "cx": 0.821140, "cy": 0.637695, "r": 0.029228 }
+    ],
+    "deck": {
+      "y": 0.547266,
+      "x0": 0.093750,
+      "x1": 0.594118,
+      "yRailTop": 0.542318,
+      "yRailTopLeft": 0.542923,
+      "yRailTopRight": 0.540710,
+      "loadSpanFromLoadedRef": { "x0": 0.093750, "x1": 0.590774 }
+    }
+  },
+
+  "truckEmptyTop": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.063971, "y": 0.364583, "w": 0.864338, "h": 0.274089 },
+    "deck": {
+      "x0": 0.063971,
+      "x1": 0.697794,
+      "y0": 0.393229,
+      "y1": 0.607422,
+      "nearRail": { "y0": 0.393229, "y1": 0.409505 },
+      "farRail": { "y0": 0.591797, "y1": 0.607422 }
+    }
+  },
+
+  "truckTop": {
+    "w": 2688,
+    "h": 1536,
+    "contentBox": { "x": 0.063988, "y": 0.365234, "w": 0.864211, "h": 0.273438 },
+    "deck": {
+      "x0": 0.063988,
+      "x1": 0.697917,
+      "y0": 0.393229,
+      "y1": 0.606771
+    }
+  },
+
+  "reachStacker": {
+    "w": 2688,
+    "h": 1536,
+    "contentBox": { "x": 0.298363, "y": 0.123698, "w": 0.546503, "h": 0.768880 },
+    "spreaderTip": { "x": 0.745350, "y": 0.347656 },
+    "spreaderGripY": 0.347897,
+    "spreaderGripX": 0.728051,
+    "spreaderGripSpan": { "x0": 0.639137, "x1": 0.816964 }
+  },
+
+  "container": {
+    "w": 2688,
+    "h": 1536,
+    "contentBox": { "x": 0.089286, "y": 0.217448, "w": 0.819568, "h": 0.555990 }
+  },
+
+  "wheel": {
+    "w": 2048,
+    "h": 2048,
+    "cx": 0.499849,
+    "cy": 0.500684,
+    "r": 0.313037
+  },
+
+  "craneBody": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.298897, "y": 0.598307, "w": 0.360294, "h": 0.293620 },
+    "wheels": [
+      { "cx": 0.371507, "cy": 0.822266, "r": 0.039338 },
+      { "cx": 0.616544, "cy": 0.819987, "r": 0.040257 }
+    ],
+    "groundY": 0.891927,
+    "pivot": { "x": 0.323603, "y": 0.644596 },
+    "bracketBox": { "x": 0.305515, "y": 0.633464, "w": 0.100735, "h": 0.080729 }
+  },
+
+  "craneBoom": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.153676, "y": 0.125651, "w": 0.672426, "h": 0.765625 },
+    "pivot": { "x": 0.185331, "y": 0.751237 },
+    "head": { "x": 0.791728, "y": 0.345703 },
+    "headMountSpan": { "x0": 0.765809, "x1": 0.817647 },
+    "restAngleDeg": 20.69,
+    "pivotToHeadLen": 0.648199
+  },
+
+  "spreader": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.126471, "y": 0.377604, "w": 0.756250, "h": 0.209635 },
+    "topHang": { "x": 0.492831, "y": 0.431641 },
+    "gripY": 0.567708,
+    "gripSpan": { "x0": 0.199265, "x1": 0.816176 },
+    "feet": [
+      { "cx": 0.195404, "bottomY": 0.586589 },
+      { "cx": 0.812316, "bottomY": 0.584635 }
+    ]
+  },
+
+  "craneWheel": {
+    "w": 2048,
+    "h": 2048,
+    "cx": 0.503677,
+    "cy": 0.563628,
+    "r": 0.374258,
+    "rTreadP05": 0.364258,
+    "rTreadP95": 0.379883
+  },
+
+  "containerVeyra": {
+    "w": 2720,
+    "h": 1536,
+    "contentBox": { "x": 0.089338, "y": 0.217448, "w": 0.819485, "h": 0.557943 },
+    "roofY": 0.228516,
+    "bottomY": 0.772786,
+    "castingsBottomY": 0.774740,
+    "topCastingCx": [0.103860, 0.894485]
+  },
+
+  "containerTop": {
+    "w": 2688,
+    "h": 1536,
+    "contentBox": { "x": 0.136161, "y": 0.236328, "w": 0.727307, "h": 0.527344 }
+  },
+
+  "doorBlue": {
+    "w": 1792,
+    "h": 2304,
+    "contentBox": { "x": 0.093192, "y": 0.142361, "w": 0.813058, "h": 0.679688 }
+  },
+
+  "doorOrange": {
+    "w": 1760,
+    "h": 2352,
+    "contentBox": { "x": 0.092045, "y": 0.140731, "w": 0.817045, "h": 0.682398 },
+    "imageHeightScaleVsDoorBlue": 0.996028
+  },
+
+  "_checks": {
+    "howTheEmptyAndLoadedTrucksRelate": "They are the SAME render. Verified: x_loaded * (2720/2688) = x_empty to within 1.3px over a 1770px baseline (all five wheel centres plus the cab-roof apex), while y is IDENTICAL — the ground line under all five wheels agrees to 0.07px (1063.61/1063.31/1062.22/1061.41/1057.84 vs 1063.68/1063.32/1062.27/1061.39/1057.84) and the cab-roof apex is y=415 in both. In other words truck-empty.png is truck-side.png's canvas stretched in WIDTH ONLY, 2688 -> 2720, with the height untouched. Consequence: every fraction in truckEmpty and truckSide is directly interchangeable, but the two files must be rendered at the SAME HEIGHT, not the same width. At matched height the two compose pixel-for-pixel (b = 0.78px, i.e. x=0 maps to x=0, so a shared left edge is enough). At matched width the empty truck comes out 1.19% short vertically and its wheels sit ~1.2% too high. Same relationship holds for the top pair: truckTop x 172/2494 -> truckEmptyTop 174/2524, y identical.",
+
+    "contentBoxDelta_truckEmpty_vs_truckSide": "Well inside the ~2% tolerance; no rig compensation needed. dx = +0.000744 (0.074% of width, 2.02px), dw = -0.000915 (0.092%, 2.49px), right edge delta -0.000171 (0.47px), BOTTOM EDGE delta -0.000001 (0.0015px — the two trucks stand on exactly the same ground line). dy = +0.008463 and dh = -0.008464 (13.0px) look large but are expected and not an error: truckSide's box top is the CONTAINER roof (y=402px) while truckEmpty's is the CAB roof (y=415px). Both boxes were cut at the same threshold (dev-from-white >= 65, the plateau value the original truckSide entry used).",
+
+    "wheelDelta_truckEmpty_vs_truckSide": "Per wheel, truckEmpty measured minus truckSide mapped through x*(2720/2688), expressed in truck-empty pixels (2720 wide, 1536 tall). w1 dcx -1.21, dcy +0.66, dr -0.70. w2 dcx -0.32, dcy -0.22, dr +0.21. w3 dcx -0.39, dcy +0.49, dr -1.50. w4 dcx -0.12, dcy +0.16, dr -1.15. w5 dcx +0.11, dcy +0.49, dr -2.45. Centres therefore agree to 1.3px (0.05% of width) — i.e. they line up, and the residual is measurement noise, not a real offset. Radii agree to 2.5px worst case (w5, 3% of that tyre); r is the noisiest quantity here because it is ground-line minus centre-y and both terms carry about a pixel. If the rig cross-fades truck-empty into truck-side under a shared set of wheel overlays, prefer truckSide.wheels for BOTH — the images are the same render, so a single set cannot drift, whereas mixing the two entries would nudge each overlay by up to 2.5px at the swap.",
+
+    "wheelsAreSlightlyEllipticalOnTheEmptyTruck": "Because truck-empty was stretched in width only, its baked-in tyres are 1.19% wider than they are tall. truckEmpty.wheels[i].r is the VERTICAL radius expressed as a fraction of width, so r * renderedWidth gives the correct radius on the Y axis and is 1.19% short on X. At a 400px-tall truck that is well under a pixel. Ignore it unless a wheel overlay is composited at very large scale.",
+
+    "spreaderGripY": "0.347897 of the reach stacker's height = 534.37px. This is the spreader's load-bearing UNDERSIDE — the plane that would touch a container's top face — measured as the sub-pixel lower boundary of the spreader's silhouette over its whole flat run (456 columns, x 1730..2185; per-column values span 533.86..535.51, median 534.33). NOTE: this is the same plane the existing reachStacker.spreaderTip.y already encodes (0.347656 = 534.0px). The two differ by 0.37px. So a vertical gap between spreader and container is NOT explained by spreaderTip.y — see the next entry for what probably does explain it.",
+
+    "spreaderGripX_thisIsProbablyTheGapBug": "The spreader is drawn in three-quarter view: the far side recedes up and to the RIGHT, so the yellow/black hazard beam (the front girder's FACE) is not centred over the underside. Hazard beam face spans x 1737..2270, centre 2003.5px = 0.745350 — that is what the existing spreaderTip.x holds. The load-bearing underside spans x 1718..2196, centre 1957px = 0.728051, and its near edge runs flat at y=534 from x=1718 to x=2196. The two centres are 46.5px apart = 0.017299 of the reach stacker's width = 3.2% of the machine's own content-box width. Anchoring a container's top-centre to spreaderTip.x therefore hangs it about 46px (source scale) to the RIGHT of the surface it is supposed to be touching. Use spreaderGripX with spreaderGripY for the constraint, and spreaderGripSpan (0.639137..0.816964) if the lock needs the contact segment rather than a point.",
+
+    "deckY_whyThereAreTwoNumbers": "truckEmpty.deck.y = 0.547266 (840.6px) is the line a container's BOTTOM EDGE must land on. truckEmpty.deck.yRailTop = 0.542318 (833.0px) is the top edge of the bare chassis rail as it appears in the pixels. They differ by 7.6px and both are real. Evidence for 840.6: (a) in truck-side.png, where a container is actually sitting on this exact trailer, the container's bottom edge is at y=840.57 median over 1204 columns, dead flat (10th..90th percentile 840.44..840.65); (b) in truck-empty.png the trailer's own rear deck section (x 258..322, the part the container's rear overhangs onto) tops out at y=840.96 median. Two independent features agreeing to 0.4px. The rail edge at 833.0 sits 7.6px higher because the container is wider than the chassis and is drawn IN FRONT of the rails — its bottom side rail occludes the rail top in the loaded render (verified: at x=700 in truck-side the pixels from y=833 down to y=840 are container grey, not chassis black). Rest the container on 0.547266. If the rig instead uses yRailTop the container sinks 7.6px into the trailer rather than floating, which is the less ugly failure, but it is still wrong.",
+
+    "deckIsNotLevel": "The bare rail's top edge is not horizontal — the render carries the same slight perspective as the ground line. It runs y=833.93px at x=330 and y=830.53px at x=1610, a slope of -0.00266 px/px (yRailTopLeft 0.542923, yRailTopRight 0.540710, median 0.542318). The loaded reference container's bottom edge, by contrast, is FLAT at 840.57 across the whole span — the container in truck-side.png was composited as a flat-bottomed sprite, it was not rendered in perspective. So a flat container sprite dropped on deck.y matches the reference exactly and no per-x tilt is needed. Do not tilt the container to follow yRailTop.",
+
+    "deckXSpan": "truckEmpty.deck x0=0.093750 (255px) .. x1=0.594118 (1616px) is the visible deck structure: the rear section at 255..324 and the continuous rail top at 325..1616. Cross-check against where the container actually sits in the loaded render: truck-side's container spans 252..1588px = 0.093750..0.590774 in its own fractions (recorded as deck.loadSpanFromLoadedRef and as truckSide.deck). x0 agrees to six decimal places; x1 differs by 0.003344 (9px), the chassis simply runs a little past the container's front end. Beyond x=1616 the trailer's front is occluded by the tractor, so 0.594118 is a VISIBLE end, not the structural end — do not read it as the kingpin.",
+
+    "topViewDecks": "In plan the load area is the rectangle formed by the two chassis rails. truckEmptyTop: rails outer-to-outer y 604..933px, x 174..1898px. truckTop's container occupies y 604..932px, x 172..1876px. Mapped through the same 2688->2720 width relation those are the same rectangle: x0 0.063971 vs 0.063988, x1 0.697794 vs 0.697917, y0 identical at 0.393229, y1 0.607422 vs 0.606771 (1px). So in the top view a container covers the rails exactly, outer edge to outer edge, with no inset — place it on the deck rect as-is. truckEmptyTop.deck also carries nearRail (y 604..629px) and farRail (y 909..933px) if the rig wants to show the hollow between them while the trailer is empty. Fractions are NOT comparable between the side and top views: the top render is at a different scale (truck length 0.8639 of canvas width vs 0.7956 in the side render).",
+
+    "containerAssetDoesNotMatchTheBakedOne": "Flagged because it affects the hand-off frame. container.png is a BLUE-grey container with a content box 2203x854 (aspect 2.58). The container baked into truck-side.png is a PALER grey and measures 1336x438.5 (aspect 3.05) — a different render, not the same asset composited. The rig cannot cross-fade truck-side.png in on top of an animated container.png and expect the two to coincide; either keep building the loaded truck from truck-empty.png + container.png for the whole shot, or accept a visible hue and proportion pop at the swap. truckSide.deck is recorded so the loaded reference can at least be matched positionally.",
+
+    "confidence": "HIGH on every geometric relation (the empty/loaded correspondence, the content boxes, deck.y, the top-view rectangles, spreaderGripY, spreaderGripX): each is corroborated by at least two independent features and the residuals are sub-pixel to ~1px. MEDIUM on truckEmpty.wheels[i].r specifically — +/-2.5px, inherited from the ground-line-minus-centre recipe, see wheelDelta above. Nothing in this file is estimated or eyeballed; every value came out of a pixel decode.",
+
+    "craneBodyIsTheLegacyChassis": "CHECK (a): craneBody is the legacy reachStacker's chassis re-rendered on a 2720 canvas with the SAME width-only stretch the trucks use: x_legacy * (2720/2688) = x_new, y identical. Proof: the bracket's apex pivot bolt sits at (868.9, 990.2)px in reachstacker.png; mapped, (879.2, 990.2) vs (880.2, 990.1) measured in crane-body.png — 1.0px. The ground line is y=1370 (0.891927) in BOTH at dev>=30, identical to the legacy machine. The front tyre's dark-silhouette row extents map through the same factor to within ~2px, and the wheelbase maps to within 1.5px. Consequently the wheel radii family matches by construction (same wheels, r ~= 104-110px in both), and the rig may size craneBody with the exact STACKER_W math it used for reachStacker — the content boxes nearly coincide in fractions too (x 0.298897 vs 0.298363, ground identical). The chassis renders are interchangeable at matched HEIGHT-per-width rules exactly like truckEmpty vs truckSide.",
+
+    "craneBoomPivotOffsetAndScale": "CHECK (b): the boom is NOT drawn at the body's scale — it is zoomed ~1.5x. Do not compose the two canvases 1:1. The two pivot plates are the same design (triangular plate, one big apex pivot bolt, a row of bolts along the sloping bottom edge); measured apex-bolt-to-bolt-row drop is 85px on the body bracket vs 128.5px on the boom plate, so at equal world scale the boom canvas must be rendered at k = 85/128.5 = 0.6615 of the craneBody canvas size, at which the two plates coincide and hide the joint. The weld rule is then: place the boom so that boomPivot (0.185331, 0.751237 of the boom image) lands exactly on craneBody.pivot (0.323603, 0.644596 of the body image). If (and only if) both canvases were rendered at the same width, that would be a translation of (+0.138272 w, -0.106641 h) — but apply the k scale first. An independent solve that instead forces the assembled grip point onto the legacy machine's grip prefers k = 0.683; treat k as tunable in [0.66, 0.69] and verify against a reachstacker.png overlay. z-order: the body bracket renders IN FRONT of the boom's pivot end (that is how the legacy render reads).",
+
+    "craneAssembledVsLegacySilhouette": "CHECK (c): with the boom at restAngleDeg (20.69deg, as drawn) the assembly is LOWER and LONGER than the legacy render — the legacy machine carries the boom steeper. Measured with the same top-edge line-fit on both images: legacy boom top edge 39.38deg vs new boom 33.79deg, i.e. the rig must rotate the boom about the pivot by roughly +4.7 to +5.6deg beyond rest to reproduce the legacy stance (the kinematic solve that puts the grip exactly on the legacy grip point gives theta = 25.36deg = rest + 4.67). At k=0.6615, theta=25.36deg, and the spreader scaled so its grip span equals the legacy spreader's (see spreaderScales), the assembled grip lands 34.5px left and 16.3px below the legacy grip point (2720-equivalent px), i.e. within ~3% of the machine's reach — the silhouette reads as the same machine. Two honest deviations: (1) the boom barrel is drawn slimmer relative to its length than legacy — matching barrel depth alone would want k=0.58, so at k=0.66 the boom reads ~14% beefier than legacy; (2) the new spreader is only the beam, while the legacy spreader had a tall A-frame above it, so the head-to-grip drop is ~60px (2720-eq) vs legacy ~150px — the rig's drop(p) term supplies the difference.",
+
+    "craneWheelOverlayScale": "crane-wheel.png composited over a baked-in craneBody wheel: overlayWidthPx = (craneBody.wheels[i].r / craneWheel.r) * renderedBodyWidthPx = 10.51% / 10.76% of the rendered body width for rear/front. Centre the overlay's (craneWheel.cx, craneWheel.cy) — the teal hub-cap centroid, NOT the canvas centre — on the wheel's (cx, cy) and rotate about that point. rotationDeg = travelledPx / (PI * 2 * r * renderedBodyWidthPx) * 360, driven by the SAME scroll-derived value that translates the body, exactly like the truck (works in reverse scrub). Crane wheels are ~25% larger than the truck's, so they correctly spin slower for the same travel.",
+
+    "spreaderScales": "The spreader is drawn much larger in its own canvas than at machine scale. Two calibrations: (1) vs the legacy machine: legacy spreader grip span is 478px on 2688 = 483.7 (2720-eq); the new spreader's grip span is 1678px, so at legacy machine scale render the spreader canvas at 0.2883 of the craneBody canvas width. (2) vs containerVeyra: the twist-lock feet centres span 1678px (0.195404..0.812316) and the container's top corner-casting centres span 2150.5px (0.103860..0.894485), so renderedSpreaderWidth = 1.2816 * renderedContainerWidth puts the feet exactly over the castings. Contact planes: containerVeyra.roofY (0.228516) meets spreader.gripY (0.567708); the feet bottoms (0.586589) then overlap the casting zone by ~6px at container scale, which reads as engaged twistlocks; the casting tops rise to the contentBox top (0.217448).",
+
+    "containerVeyraIsTheLegacyContainer": "container-veyra.png is the legacy container.png re-render (VEYRA branding added) on a 2720 canvas with the same width-only stretch: contentBox maps 240->242.9 (measured 243) and 2442->2471.1 (measured 2471) through x*(2720/2688); y0 identical at 334. Only the bottom edge differs: 1190 vs legacy 1187 — the re-render shows 3px more of the lower casting lips. All legacy container placement math carries over through the x-stretch mapping.",
+
+    "doorCanvases": "door-blue is 1792x2304, door-orange 1760x2352 — different canvases AND not a pixel-identical recolour. To render both at identical physical box HEIGHT: renderedImageHeight_orange = 0.996028 * renderedImageHeight_blue (that equalises content heights 1566/2304 vs 1605/2352). At equal content height the orange door face is 3.7% NARROWER than the blue one (content aspect 0.895950 vs 0.930396) — a real property of the renders, not measurement error; if the two doors must swap in place, fit by height and centre horizontally. Both boxes were cut at dev-from-white >= 100 (plateau 100..160) instead of the house 65, because both masters bake a soft right-hand drop shadow that never plateaus below 100; the door faces themselves are dark (dev >= 200) so the higher threshold cannot clip them.",
+
+    "craneConfidence": "HIGH (plateau/bolt/plane methods, corroborated twice, ~1-2px): all contentBoxes, craneBody.pivot and craneBoom.pivot (apex-bolt centroids), craneBoom.head (flat-run centre of the head bracket underside, x 2083..2224 median y 531), restAngleDeg (+/-0.3deg), spreader.gripY/gripSpan/feet (alpha-silhouette histogram), craneWheel hub + radius, containerVeyra planes, door boxes, ground lines. MEDIUM: craneBody.wheels — the baked tyres melt into a soft occlusion shadow, so automated circle fits disagreed; centres were digitized on a 10px-grid, gamma-boosted 4x crop (rim disc + hub cap + bolt ring) and corroborated by bolt-highlight midpoints and chord symmetry: +/-4px on centres, r = ground - cy +/-4px. MEDIUM: spreader.topHang.x — the centre lug overlaps the hazard stripes and cannot be isolated by colour; digitized at 6x (lug spans x 1325..1357, rounded bottom at y ~719): +/-3px. The boom-to-body scale k is an ESTIMATE bounded by three independent anchors (0.58 barrel depth, 0.6615 plate match, 0.683 grip solve); the plates give the only anchor that must be visually exact at the joint, so 0.6615 is recommended, but it is not a single-truth measurement."
+  },
+
+  "_note": {
+    "units": "Every value is a fraction (0..1) of that image's OWN dimensions. x and w are fractions of image width; y and h are fractions of image height. Radii (r) are fractions of image WIDTH. Both source images have square pixels and are rendered with preserved aspect ratio, so multiplying r by the element's rendered width gives a radius that is correct on both axes. EXCEPTION: truck-empty.png and truck-empty-top.png are stretched in width only, so their pixels are 1.19% wider than tall — see _checks.wheelsAreSlightlyEllipticalOnTheEmptyTruck.",
+
+    "method": "Measured programmatically, not by eye. Each PNG master was decoded to raw RGBA (ffmpeg -pix_fmt rgba) and analysed with plain Node. Every number below was then drawn back onto the source image and inspected at up to 4x zoom.",
+
+    "contentBox": "Tight bounding box of the vehicle itself — excludes the white margin AND the soft ground shadow. Derived by thresholding distance-from-pure-white on the '<name>.png' master, requiring >=4 content pixels per row/column to reject specks. The threshold was swept (20/30/40/50/65/80) and the value taken from the plateau where the box stops moving; the soft shadow only appears below that plateau. Confidence: HIGH, within about 2px (<0.1%) on every edge. Pixel values: truckSide (250,402,2141x664), truckTop (172,561,2323x420), reachStacker (802,190,1469x1181), container (240,334,2203x854), wheel (390,378,1268x1296), truckEmpty (255,415,2164x651), truckEmptyTop (174,560,2351x421).",
+
+    "truckSide.wheels": "Five wheels, ordered left to right: trailer bogie x2, tractor drive tandem x2, steer axle x1 — the same count and order as the reference site's .wheel-1 .. .wheel-5. Centres come from a gradient Hough transform over the lower band: each strong edge pixel votes for a centre at distance r (35..125px) along both directions of its gradient, so the hub, the bolt circle, the rim edge and the tyre edge — all concentric — accumulate on the same point. The five peaks scored 12,900-23,200 against 3,900 for the sixth candidate, i.e. cleanly separated with no threshold tuning. Centres were then re-refined by a second Hough restricted to r=22..58px (inner rim features only, which the wheel arch never occludes); that moved them by just 0.4-1.4px, independently confirming the first pass. Confidence: HIGH, about +/-1px.",
+
+    "truckSide.wheels.radius": "r = local ground line minus centre y. The ground line is the lowest vehicle pixel within +/-20px of each wheel's cx, which is exact because a tyre's lowest point IS its ground contact and nothing else is below a wheel. A free 3-parameter circle fit was tried first and REJECTED: the tandem tyres physically touch (the pixels between them are solid black, verified), and the wheel arch hides the upper arc, so only the bottom arc is visible and cy/r trade off along it — that fit diverged to radii of 37-142px. Cross-check on the accepted values: the silver rim's outer radius divided by this tyre radius is 0.578-0.592 across the four wheels where the rim is cleanly isolable, i.e. the radii scale consistently. Confidence: HIGH, about +/-2px. Pixel values (cx, cy, r): (457.6, 978.8, 87.2) (661.0, 979.7, 85.3) (1376.0, 979.5, 84.5) (1582.3, 979.6, 83.4) (2207.1, 979.0, 81.0). The ground line used was the lowest pixel at dev-from-white >= 30, which reproduces as 1066/1065/1064/1063/1060.",
+
+    "truckSide.wheels.sizeVariation": "cy is 978.8-979.7px across all five — a 0.9px spread, i.e. flat ground. But r falls left to right, 87.2 -> 81.0px, because the render carries a slight perspective: the ground line rises from y=1066 under the trailer to y=1060 under the steer axle. This is a real property of the image, not measurement noise. Use the per-wheel r; do not average them or the overlays will drift by up to 6px.",
+
+    "truckEmpty.wheels": "Same pipeline as truckSide, run independently on truck-empty.png so the two entries are not circular. Centres are the consensus of the gradient Hough (r=35..125 coarse, then r=22..58 refined in a +/-14px window) and the silver rim's silhouette bounding-box centre; those two methods agreed to 1.0px on every wheel. r = ground line minus cy with the ground line taken at dev-from-white >= 30, identical to truckSide. Pixel values (cx, cy, ground, r): (461.8, 979.5, 1067, 87.5) (668.5, 979.5, 1066, 86.5) (1392.0, 980.0, 1064, 84.0) (1601.0, 979.8, 1063, 83.2) (2233.5, 979.5, 1059, 79.5). Confidence: HIGH on centres (+/-1px), MEDIUM on r (+/-2.5px). See _checks.wheelDelta_truckEmpty_vs_truckSide.",
+
+    "truckEmpty.deck": "y (0.547266 = 840.6px) is the plane a container's bottom edge rests on; yRailTop (0.542318 = 833.0px) is the visible top edge of the bare chassis rail. Both were derived from actual rail pixels — the rail edge by sub-pixel white-to-black crossing per column across x 330..1610, the rest line by the trailer's own rear deck section (x 258..322, median 840.96px) and confirmed against the container actually resting on this trailer in truck-side.png (median 840.57px over 1204 columns). Read _checks.deckY_whyThereAreTwoNumbers before using either. x0/x1 bound the visible deck structure, x 255..1616px.",
+
+    "truckEmptyTop.deck / truckTop.deck": "The plan-view load rectangle, outer edge to outer edge of the two chassis rails. Found by scanning columns clear of the tyres (x 230..290 and 1790..1830, where the tyres do not overhang the frame) for the first and last non-white row, and by scanning rows inside each rail (y=615 and y=920) for the x extent. Pixel values: truckEmptyTop x 174..1898, y 604..933, rails 604..629 and 909..933; truckTop container x 172..1876, y 604..932. Confidence: HIGH, +/-1px. Beware: the tyres protrude past the frame on both sides (y 561..603 and y 934..980), so a naive bounding box of the trailer region is 40px too tall on each side and is NOT the deck.",
+
+    "wheelRotationMath": "circumference = Math.PI * (2 * wheels[i].r * renderedTruckWidthPx); rotationDeg = (distanceTravelledPx / circumference) * 360. Distance must come from the same scroll-derived value that translates the truck body, so the wheels stay locked to it at any scroll position including scrubbing backwards.",
+
+    "wheelOverlayScale": "To size wheel.webp so its tyre matches a baked-in wheel: overlayWidthPx = (truckSide.wheels[i].r / wheel.r) * renderedTruckWidthPx. Then place the overlay's centre at (wheels[i].cx, wheels[i].cy) of the rendered truck — note that is the HUB centre, which is offset from the wheel image's bbox centre — and rotate about that centre. Ratios work out to overlay widths of 10.36%, 10.13%, 10.04%, 9.91% and 9.63% of the rendered truck width for wheels 1-5.",
+
+    "wheel": "cx/cy is the hub centre, found by the same Hough method (r=120..420px). It lands within 0.2px of the alpha silhouette's bounding-box centre — two independent methods agreeing — and 1.9px below the geometric centre of the 2048x2048 canvas, so the image is very nearly but not exactly centred. r is the MEAN tyre outer radius over 1440 rays cast against the alpha silhouette of wheel-cut.png. The tread is knobbly rather than a clean circle: per-ray radius ranges 619.1-648.6px (mean 641.1, median 641.8) and the silhouette bbox is 1268x1296px, i.e. the outline is about 2% taller than it is wide. The mean is the right value for both scaling and the rolling-circumference math. Confidence: HIGH on the centre (+/-1px); on r, +/-1% is inherent to a non-circular tread, not a measurement limitation.",
+
+    "reachStacker.spreaderTip": "'Tip' is ambiguous, so to be explicit: this point is the CENTRE OF THE SPREADER'S LOAD-BEARING UNDERSIDE — where a picked container's top-centre should sit. x = 2003.5px, the horizontal centre of the yellow/black hazard beam, whose bbox is x 1737..2270px (found by connected-component clustering of hazard-yellow pixels: R>120, G>90, R-B>70, G-B>50; the beam resolves into 7 evenly spaced stripe components all centred on y=419). y = 534px, the bottom of the spreader assembly's contiguous non-background span, which reads a flat 534 for every x from 1760 to 2100. If you instead wanted the outermost tip of the boom assembly, that is the content box's right edge at x=2271px (0.844494). Confidence: HIGH on the numbers themselves; MEDIUM on whether this is the anchor point the component actually needs. CORRECTION: the y is right but the x is not the underside's centre — the spreader is in three-quarter view and the hazard beam is its front FACE, which sits 46.5px right of the underside. Use spreaderGripX / spreaderGripY.",
+
+    "reachStacker.spreaderGripY / spreaderGripX / spreaderGripSpan": "The contact plane, which is what a parenting constraint needs. spreaderGripY = 0.347897 (534.37px), the sub-pixel lower boundary of the spreader silhouette taken over 456 columns (x 1730..2185); per-column values run 533.86..535.51 with median 534.33, i.e. the underside's near edge is flat to within a pixel and there is no protruding twistlock below it. spreaderGripSpan x0=0.639137 (1718px) .. x1=0.816964 (2196px) is the horizontal extent of that flat contact edge, and spreaderGripX = 0.728051 (1957px) is its centre. Confidence: HIGH, +/-0.5px on y, +/-2px on the span ends (the ends are chamfered, so 'where the flat stops' is a judgement of a couple of pixels). See _checks.spreaderGripX_thisIsProbablyTheGapBug.",
+
+    "assetWarnings": {
+      "container-cut.png": "BROKEN — do not use as a cut-out. The keyer treated the bright faces of the corrugation as background, so the alpha has vertical see-through stripes across the whole container; 7.6% of pixels inside the content box are transparent despite being clearly non-white. Verified by compositing over magenta. Use container.png / container.webp (white background) and blend it, or re-key from the master.",
+      "wheel-cut.png": "Usable, but the 8 bolt holes and the hub bore are fully transparent. That is arguably correct (they are real holes) but they will show whatever is behind the wheel, which over a dark section may look like the rim is punched out. 0.33% of content-box pixels were keyed away.",
+      "truck-side-cut.png": "Usable. Retains a faint semi-transparent ground shadow (alpha roughly 128-200) as a thin band around y=1045..1062 stretching left to x=69, well outside the vehicle. The contentBox above deliberately excludes it. A handful of chrome highlights were also keyed away (0.004% of content-box pixels, 0.42% semi-transparent).",
+      "truck-top-cut.png": "Clean. 0.008% keyed away, no visible holes.",
+      "truck-empty-cut.png": "Clean and safe to use. 0.027% of content pixels keyed away, 1.10% semi-transparent; the keyed pixels sit in one band (x 1276..2107, y 614..940) which is the chrome and glass on the cab, not the trailer. No opaque background pixels remain inside the content box.",
+      "truck-empty-top-cut.png": "Cleanest of the set. A single content pixel keyed away, 0.18% semi-transparent, no opaque background left inside the content box.",
+      "reachstacker-cut.png": "Clean. 0.071% keyed away, no visible holes.",
+      "bolt-count": "wheel.png has 8 bolt holes, not 10."
+    },
+
+    "encoding": "scripts/optimise-assets.sh encodes a .webp beside every .png at cwebp -q 88 -m 6 -pass 6 -sharp_yuv -alpha_q 100. Set totals 15.83 MB PNG -> 920.9 KB WebP (94.3% smaller). PSNR against the masters is 45.3-53.7 dB, i.e. visually lossless; the corrugation and the rim machining detail were compared side by side at 4x zoom and are indistinguishable. The PNG masters are kept on disk. Note: the Homebrew ffmpeg on this machine is built WITHOUT libwebp, so the script uses cwebp and only falls back to ffmpeg if cwebp is missing.",
+
+    "geometryIsSharedAcrossVariants": "'<name>.png' and '<name>-cut.png' are the same canvas at the same scale, so every fraction here applies equally to both, and to the .webp encodes of either.",
+
+    "craneBody": "Same pipeline as the trucks (ffmpeg rgba decode + plain Node, threshold sweep 20/30/40/50/65/80). contentBox pixel values (813, 919, 980x451) at the 65..80 plateau; below 65 the box bleeds right into the soft ground shadow (x1 2046 at 20). pivot = centroid of the silver apex bolt on the dark rear bracket, pixel (880.2, 990.1) +/-1.5px — that bolt is the boom's rotation pin; the boom asset carries the matching plate with its own apex bolt, and welding the two bolts assembles the joint (see _checks.craneBoomPivotOffsetAndScale). bracketBox is the neutral-grey bracket component's bbox (831..1104, 973..1096). wheels: pixel values rear (1010.5, 1263, r 107), front (1677, 1259.5, r 109.5), ground 1370/1369; r = ground - cy per the house convention. Rim-outer/tyre ratio checks out against crane-wheel.png (0.46 both), corroborating r.",
+
+    "craneBoom": "contentBox (418, 193, 1829x1176), threshold-stable 20..80 (no baked shadow). pivot = apex-bolt centroid of the pivot plate, pixel (504.1, 1153.9). head = centre of the flat underside of the head's hanging bracket — the lowest structure at the head end, flat run x 2083..2224 at median y 531, so pixel (2153.5, 531); headMountSpan records that run. restAngleDeg = atan2(pivotY - headY, headX - pivotX) = 20.69deg above horizontal as drawn (head up-right of pivot, screen y down). pivotToHeadLen = 1763.1px as a fraction of image width — with restAngleDeg this fully defines the hang point under any boom rotation: head(theta) = pivot + len*(cos theta, -sin theta).",
+
+    "spreader": "contentBox (344, 580, 2057x322); y0=580 is the raised corner pins at the ends, the beam's own top edge is flat at y=663 (per-column first-content median, P10=P90=663). topHang = the centre lug drawn over the hazard stripes at top-centre of the front face, pixel (1340.5, 663): x digitized at 6x zoom because the black lug cannot be colour-separated from the black stripes (+/-3px); it sits 31px left of the naive bbox centre — the beam is in three-quarter view, same trap as the legacy spreaderTip. gripY: per-column lowest-alpha histogram of spreader-cut puts the underside frame plane hard at y=872 (dominant bin 871..876 over 1600+ columns) = the plane a container roof touches. gripSpan (542..2220) is that plane's x extent. feet = the two twist-lock feet protruding below the plane, components (522..541) and (2200..2219), bottoms y 901/898.",
+
+    "craneWheel": "Same recipe as 'wheel'. Hub centre = teal hub-cap centroid (1031.53, 1154.31), n=20166 px; the dev>=65 solid-mask bbox (shadow-rejected: light-grey neutral pixels excluded) centres at (1027.5, 1158) — 4px agreement between two independent methods. The -cut alpha KEEPS the ground shadow (alpha>128 out to x=20), so the alpha silhouette must NOT be used for geometry on this asset; use the colour mask. r = mean of 1440 rays against the solid mask = 766.48px (tread knobs make it non-circular: P05 746, P95 778; use the mean for rolling circumference, exactly like 'wheel').",
+
+    "containerVeyraAndTop": "containerVeyra contentBox (243, 334, 2229x857): x0/x1 from the 30..50 plateau because the pale corner-casting tabs fall just under the 65 threshold (65 gives x0=256, clipping the casting); y values stable everywhere. roofY 351 and bottomY 1187 are per-column medians over the central 40% (roof P10..P90 = 349..369 — the roof line is flat, the spread is the corner castings). topCastingCx are the top corner-casting centroid x positions (282.5, 2433), the twist-lock targets. containerTop contentBox (366, 363, 1955x810) at the 65..80 plateau; below 65 the bottom bleeds into the plan-view drop shadow (y1 1348 at 20).",
+
+    "craneMeasurementTooling": "All measured programmatically from ffmpeg -pix_fmt rgba dumps analysed with throwaway Node scripts in the session scratchpad (nothing added to the repo); the two hand-digitized quantities (craneBody wheel centres, spreader topHang x) were read off gamma-boosted 4x/6x pixel-grid crops of the same dumps and cross-checked against at least one programmatic signal each — see _checks.craneConfidence for the honest error bars."
+  }
+}

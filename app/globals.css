@@ -1,26 +1,339 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-paper: #ffffff;
+  --color-ink: #111111;
+  --color-night: #0a0a0b;
+  --color-ocean: #0b4fa8;
+  --color-abyss: #062e63;
+  --color-signal: #ff4d2e;
+  --color-mist: #e8e8e6;
+  /* The wipe's leading edge — the brand colour that arrives before the ink. */
+  --color-beam: #2b46ff;
+
+  --font-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Tailwind v4 tree-shakes @theme variables that are only referenced through
+   var() in authored CSS (never by a generated utility). The font tokens fall
+   in that bucket, so without `static` they are never emitted and .u-display /
+   .u-display-hero silently resolve to the system stack. */
+@theme static {
+  --font-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Lenis smooth scroll */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Nothing on this page is allowed to scroll the body sideways. `clip`
+       rather than `hidden` so it never turns an ancestor into a scroll port
+       under the pinned section. */
+    overflow-x: clip;
+  }
+
+  body {
+    font-family: var(--font-body);
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-paper);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Hero display face — Archivo's wdth axis pulled condensed to match the
+     tall grotesque of the reference. Sized against viewport HEIGHT so three
+     stacked lines always land in the 55-75% band of the hero. */
+  .u-display-hero {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 82;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    /* Sized by the SHORTER constraint. A pure-height clamp (10vh) says
+       nothing about how wide "ACCOUNTED" gets: on a 390px phone it asked for
+       84px type, the line measured ~490px, and the hero's overflow-hidden
+       simply cut the words off. min() lets width govern once the screen is
+       narrow, and leaves desktop untouched (10vh still wins there). */
+    font-size: clamp(2.25rem, min(10vh, 13vw), 7.5rem);
+  }
+
+  /* Sparse starfield — two repeating data-URI layers, no assets, no canvas. */
+  .hero-stars-far {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='24' cy='36' r='.6'/%3E%3Ccircle cx='88' cy='142' r='.5'/%3E%3Ccircle cx='161' cy='58' r='.6'/%3E%3Ccircle cx='233' cy='190' r='.5'/%3E%3Ccircle cx='302' cy='84' r='.6'/%3E%3Ccircle cx='377' cy='150' r='.5'/%3E%3Ccircle cx='52' cy='247' r='.6'/%3E%3Ccircle cx='139' cy='311' r='.5'/%3E%3Ccircle cx='210' cy='262' r='.6'/%3E%3Ccircle cx='291' cy='343' r='.5'/%3E%3Ccircle cx='355' cy='268' r='.6'/%3E%3Ccircle cx='398' cy='391' r='.5'/%3E%3Ccircle cx='18' cy='398' r='.5'/%3E%3Ccircle cx='118' cy='12' r='.5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 420px 420px;
+    opacity: 0.35;
+  }
+
+  .hero-stars-near {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='31' cy='74' r='.8'/%3E%3Ccircle cx='122' cy='28' r='.7'/%3E%3Ccircle cx='208' cy='96' r='.8'/%3E%3Ccircle cx='74' cy='176' r='.7'/%3E%3Ccircle cx='176' cy='214' r='.8'/%3E%3Ccircle cx='243' cy='177' r='.7'/%3E%3Ccircle cx='12' cy='236' r='.7'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 260px 260px;
+    background-position: 90px 40px;
+    opacity: 0.45;
+  }
+
+  /* Shared headline treatment — fluid via clamp(), no breakpoints needed. */
+  .u-display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-weight: 800;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.75rem, 9vw, 10rem);
+  }
+
+  /* The yard ships twice: one pinned, scrubbed rig and one static composition
+     of the same beats. This is the ONLY place the choice is made — YardSection
+     asks the DOM whether its stage is displayed rather than restating the query
+     in JavaScript, so the two can never disagree.
+     Pinning needs room in BOTH axes: below 769px, on portrait windows, or under
+     a reduced-motion preference, the twelve-viewport narrative is told as a
+     sequence instead. */
+  .yard-live {
+    display: none;
+  }
+
+  .yard-static {
+    display: block;
+  }
+
+  /* THE PIN HAND-OFF, and only where there IS a pin. The client board is
+     pulled up one screen so it lands exactly where the aircraft handed it
+     over — but that overlap is only correct while the yard is a pinned
+     stage covering it. On phones the yard is the static story instead, so
+     the same margin would slide a real section under real content and hide
+     the client heading behind an opaque background. Same query as the live
+     stage, so the two can never disagree. */
+  .pin-handoff {
+    margin-top: 0;
+  }
+
+  @media (min-width: 769px) and (min-aspect-ratio: 1 / 1) and (prefers-reduced-motion: no-preference) {
+    .yard-live {
+      display: block;
+    }
+
+    .yard-static {
+      display: none;
+    }
+
+    .pin-handoff {
+      margin-top: -100svh;
+    }
+  }
+}
+
+@layer components {
+  /* ——— Crescent-arc cover at the head of the intro section. ———
+     The card's top edge is the UNDERSIDE of a giant circle: an oversized
+     ellipse (95vw × 95svh) whose centre sits 81svh ABOVE the head, so its
+     bottom boundary dips 14svh into the head at screen centre and rises to
+     ~0 at both sides — the reference's planet-underside curvature.
+
+     SINGLE SOURCE OF TRUTH: the four custom properties below define that
+     ellipse ONCE, on the wrapper. The card mask, the concentric colour
+     gradient and the rim glow all read the same vars, so the three layers
+     can never drift out of registration — change the geometry here and
+     everything moves together. */
+  .intro-cover {
+    --arc-rx: 95vw; /* horizontal semi-axis */
+    --arc-ry: 95svh; /* vertical semi-axis   */
+    --arc-cx: 50%; /* centre x             */
+    --arc-cy: -81svh; /* centre y (above head) */
+  }
+
+  /* THE ARC, REVERSED. Identical machinery, one variable moved: the ellipse
+     centre goes from 81svh ABOVE the block to 81svh BELOW it, so the dome
+     bulges up out of the next section instead of down out of the last one.
+     Because the gradient is radial and concentric with that ellipse, the
+     stop list needs no change at all — the colours simply run outward from
+     the arc, which now means UP: black at the arc, through blue, to paper
+     at the top where the client board hands over.
+
+     The paper end-stop is a variable because this arc lands on the carrier
+     board's #FAF7F7, not on pure white; a hard-coded #ffffff printed a
+     visible band across the join. */
+  .outro-cover {
+    --arc-rx: 95vw;
+    --arc-ry: 95svh;
+    --arc-cx: 50%;
+    --arc-cy: 211svh;
+    --arc-paper: #faf7f7;
+  }
+
+  /* Card face. The mask cuts the ellipse interior OUT (everything above the
+     arc is fully transparent — the sticky hero's space + globe show through
+     while the card slides up). The 94%→112% ramp is a deliberately WIDE
+     feather (~17svh at the centre): the reference has no visible arc edge —
+     the hero's black dissolves into the card's indigo like fog, so the
+     boundary must be a long translucent blend, never a line.
+
+     The base `background` is the graceful FLAT fallback for browsers without
+     mask support: no mask means no arc, so a plain vertical wash is the
+     least-wrong rendering. Mask-capable browsers get the real thing via the
+     @supports block below — a RADIAL gradient concentric with the mask
+     ellipse, so the brightness bands run parallel to the arc: near-black
+     indigo right at the arc glowing outward through luminous blue into
+     white, like an atmosphere seen from space. */
+  .intro-cover-sky {
+    background: linear-gradient(
+      to bottom,
+      #060a24 0%,
+      #101b5c 14%,
+      #2456e6 36%,
+      #4a8cff 56%,
+      #9fc3ff 74%,
+      #eaf2ff 86%,
+      var(--arc-paper, #ffffff) 94%
+    );
+    -webkit-mask-image: radial-gradient(
+      var(--arc-rx) var(--arc-ry) at var(--arc-cx) var(--arc-cy),
+      transparent 94%,
+      #000 112%
+    );
+    mask-image: radial-gradient(
+      var(--arc-rx) var(--arc-ry) at var(--arc-cx) var(--arc-cy),
+      transparent 94%,
+      #000 112%
+    );
+  }
+
+  @supports (mask-image: radial-gradient(#000 0%, #0000 100%)) or
+    (-webkit-mask-image: radial-gradient(#000 0%, #0000 100%)) {
+    /* Stop positions are % of the ellipse radius, measured from its centre:
+       100% IS the arc, so each stop sits (n − 100)% of --arc-ry below the
+       arc at screen centre. At 1440×900 (ry = 855px, arc dip at 14svh):
+         100%  arc + 0        #060a24  near-black indigo start
+         112%  arc + ~11svh   #101b5c
+         132%  arc + ~30svh   #2456e6
+         150%  arc + ~48svh   #4a8cff  peak luminous blue
+         172%  arc + ~68svh   #9fc3ff
+         190%  arc + ~86svh   #eaf2ff
+         205%  arc + ~100svh  #ffffff  → one viewport below the dip
+       Everything past 205% holds solid #ffffff; the section bottom sits at
+       ≥222% of the radius across its full width, so the hand-off into the
+       bg-paper (#ffffff) copy wrapper is seamless at any aspect ratio. */
+    .intro-cover-sky {
+      /* Long dark run: the black→blue journey spans ~45svh like the
+         reference — indigo holds past the mask feather (which ends at
+         112%), so the boundary region reads as translucent dark fog over
+         the hero, not a band. */
+      background: radial-gradient(
+        var(--arc-rx) var(--arc-ry) at var(--arc-cx) var(--arc-cy),
+        #060a24 106%,
+        #101b5c 122%,
+        #2456e6 148%,
+        #4a8cff 168%,
+        #9fc3ff 186%,
+        #eaf2ff 200%,
+        var(--arc-paper, #ffffff) 212%
+      );
+    }
+
+    /* Atmosphere brightening hugging the arc — same ellipse vars, so the
+       bloom lands exactly on the card's silhouette. Deliberately gentle
+       (the reference has a soft atmospheric glow, not a crisp stroke):
+       a thin #7fb0ff bloom peaking at the arc, bleeding a touch outward
+       into space and a couple of svh inward over the dark indigo start,
+       heavily blurred and dissolving toward the sides. Defined only inside
+       @supports: without mask support there is no arc to hug, so the glow
+       simply doesn't render. */
+    /* Rim light retired: side-by-side against the reference showed NO
+       visible line along the arc — the boundary is pure dissolve. The
+       element stays in the markup; keep it inert rather than re-plumbing
+       IntroSection. */
+    .intro-cover-glow {
+      display: none;
+    }
+  }
+}
+
+/* ── THE WIPE ─────────────────────────────────────────────────────────────────
+   Text that reveals under a travelling edge, with the brand colour riding the
+   leading edge before each glyph settles to its final ink. One gradient, wider
+   than the line, slid across by a single animatable custom property:
+
+     0–30%   final colour   (the part already revealed, behind the edge)
+     40%     brand          (the edge itself)
+     50–100% transparent    (not revealed yet)
+
+   At --wipe 0 the gradient's transparent tail sits over the text (invisible);
+   at 100 its solid head does (fully revealed). Because the paint is
+   background-clip:text, nothing about layout or line-breaking changes — the
+   element occupies exactly the space it always did, so this is safe on
+   headings that other code measures or splits.
+
+   @property is what makes it animatable at all: without a registered
+   <number> syntax the browser cannot interpolate the value and the wipe
+   would jump between keyframes. */
+@property --wipe {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 100;
+}
+
+.u-wipe {
+  color: transparent;
+  /* SOLVED, not tuned. The image is 4x the line, so a stop at s% of the
+     image sits at 4s% of the line, and the position X (in line %) puts image
+     point c at line x = 400c - X. Two states fix everything:
+
+       --wipe 0   → transparent stop (c=.72) on the LEFT edge   → P = 96
+       --wipe 100 → last ink stop    (c=.62) on the RIGHT edge  → P = 49.33
+
+     A percentage background-position aligns the image's P% with the LINE's
+     P%, so the image's left edge lands at -3P (not at -P): image point c sits
+     at line x = 400c - 3P. Solving both states gives P = 96 - 0.4667·wipe,
+     and P stays inside [0,100] throughout, so the image always overhangs the
+     line at both ends. Every earlier failure was one of these two conditions
+     going unmet: a stranded brand band at 100, or an unpainted head (no-repeat
+     means "no image" reads as transparent, not as ink).
+
+       0–62%   ink        · revealed
+       66–68%  brand      · the edge, with a 40%-of-line ramp either side
+       72%+    transparent · not revealed yet                              */
+  background-image: linear-gradient(
+    90deg,
+    var(--wipe-final, #ffffff) 0%,
+    var(--wipe-final, #ffffff) 62%,
+    var(--wipe-edge, var(--color-beam)) 66%,
+    var(--wipe-edge, var(--color-beam)) 68.5%,
+    transparent 72%,
+    transparent 100%
+  );
+  background-size: 400% 100%;
+  background-position-x: calc((96 - 0.46667 * var(--wipe)) * 1%);
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Reduced motion: no travelling edge, just the finished text. */
+@media (prefers-reduced-motion: reduce) {
+  .u-wipe {
+    --wipe: 100;
+  }
 }
