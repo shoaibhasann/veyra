@@ -3,6 +3,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import ParticleWordmark from "@/components/ParticleWordmark";
+import DotMap from "@/components/DotMap";
 
 /**
  * THE COLOPHON. Everything a freight buyer looks for after they have decided
@@ -266,22 +268,9 @@ export default function Footer() {
             <p className="font-mono text-[0.7rem] tracking-[0.24em] text-ink/40 uppercase">
               Network
             </p>
-            {/* A dot-screen world, drawn as a CSS grid of points — no map
-                asset to ship, and it re-colours with the theme. */}
-            <div
-              aria-hidden
-              className="mt-5 h-[130px] w-full"
-              style={{
-                backgroundImage:
-                  "radial-gradient(currentColor 1px, transparent 1.1px)",
-                backgroundSize: "9px 9px",
-                color: "rgba(17,17,17,0.28)",
-                maskImage:
-                  "radial-gradient(120% 90% at 30% 45%, #000 38%, transparent 72%), radial-gradient(70% 80% at 78% 60%, #000 34%, transparent 74%)",
-                WebkitMaskImage:
-                  "radial-gradient(120% 90% at 30% 45%, #000 38%, transparent 72%), radial-gradient(70% 80% at 78% 60%, #000 34%, transparent 74%)",
-              }}
-            />
+            {/* The network, as an actual dotted world — landmask baked from
+                public-domain Natural Earth data, ports in brand blue. */}
+            <DotMap className="mt-5" />
           </div>
         </div>
 
@@ -303,21 +292,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* The sign-off: the wordmark as a dot screen, cropped by the page. */}
-      <div aria-hidden className="relative w-full overflow-hidden">
-        <p
-          className="u-display w-full text-center leading-[0.78] whitespace-nowrap select-none text-[min(23vw,320px)]"
-          style={{
-            color: "transparent",
-            backgroundImage: "radial-gradient(rgba(17,17,17,0.42) 1px, transparent 1.15px)",
-            backgroundSize: "7px 7px",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-          }}
-        >
-          VEYRA
-        </p>
-      </div>
+      {/* The sign-off: the wordmark as living dots — the pointer scatters
+          them, the spring brings every one of them home. */}
+      <ParticleWordmark text="VEYRA" />
     </footer>
   );
 }
