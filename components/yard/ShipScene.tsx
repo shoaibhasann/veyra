@@ -21,6 +21,9 @@ export interface ShipSceneRefs {
   rootRef: RefObject<HTMLDivElement | null>;
   /** The zoom + pan wrapper around the sea plate (videos + hero box). */
   wrapRef: RefObject<HTMLDivElement | null>;
+  /** The handoff loop — living water while the reader is still on the deck.
+      The ticker parks it once the ascent has covered it. */
+  loopRef: RefObject<HTMLVideoElement | null>;
   /** The ascent footage — ONE continuous shot with the drone rise baked
       in. The ticker scrubs its currentTime with the scroll. */
   ascentRef: RefObject<HTMLVideoElement | null>;
@@ -199,6 +202,7 @@ export function ascentSlotAt(t: number): { x: number; y: number; s: number } {
 export default function ShipScene({
   rootRef,
   wrapRef,
+  loopRef,
   ascentRef,
   heroRef,
   typeRef,
@@ -212,10 +216,16 @@ export default function ShipScene({
     >
       {/* THE SEA PLATE: two instants of ONE shot plus the hero box, a
           rigid unit under one CSS zoom. The loop plays the handoff's living
-          water; the ascent — same first frame, drone rise baked in — takes
-          over under a scroll-scrubbed clock. Same footage family, same
-          palette, so there is nothing to mismatch: the CSS zoom never goes
-          below cover, and the "smaller ship" is the footage itself. */}
+          water; the ascent — drone rise baked in — takes over under a
+          scroll-scrubbed clock.
+
+          BOTH SEAMS ARE SOLVED, not hoped for. The loop is cut as a real
+          loop (its last frame is the frame before its first, so the wrap is
+          one ordinary frame step, not a cut) and GRADE-MATCHED offline to
+          the ascent's takeover frame: the source drifts ~7 units of blue
+          across its ten seconds, which is what used to make the hand-over
+          read as "the video changed". Measured water means now agree to
+          under a unit, and the ticker cross-dissolves the last of it. */}
       <div
         ref={wrapRef}
         className="absolute top-1/2 left-1/2 will-change-transform"
@@ -226,7 +236,8 @@ export default function ShipScene({
         }}
       >
         <video
-          src="/assets/sea-ship.mp4"
+          ref={loopRef}
+          src="/assets/sea-loop.mp4"
           autoPlay
           muted
           loop

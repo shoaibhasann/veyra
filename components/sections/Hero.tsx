@@ -15,7 +15,6 @@ export default function Hero() {
   const rootRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const eyebrowRef = useRef<HTMLSpanElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<HTMLSpanElement[] | null>(null);
 
   // Exit-scrub targets. The load reveal owns opacity/y on the [data-hero-reveal]
@@ -193,43 +192,8 @@ export default function Hero() {
     return () => mm.revert();
   }, []);
 
-  // Custom cursor ring — fine pointers only, damped with quickTo, scoped to
-  // the hero. Section-relative coords keep it correct while the page scrolls.
-  useEffect(() => {
-    const root = rootRef.current;
-    const cursor = cursorRef.current;
-    if (!root || !cursor) return;
-    if (prefersReducedMotion()) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-
-    const xTo = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
-    const yTo = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
-
-    const move = (e: PointerEvent) => {
-      const r = root.getBoundingClientRect();
-      xTo(e.clientX - r.left);
-      yTo(e.clientY - r.top);
-    };
-    const enter = (e: PointerEvent) => {
-      const r = root.getBoundingClientRect();
-      gsap.set(cursor, { x: e.clientX - r.left, y: e.clientY - r.top });
-      gsap.to(cursor, { autoAlpha: 1, duration: 0.25, overwrite: "auto" });
-    };
-    const leave = () => {
-      gsap.to(cursor, { autoAlpha: 0, duration: 0.25, overwrite: "auto" });
-    };
-
-    root.addEventListener("pointermove", move);
-    root.addEventListener("pointerenter", enter);
-    root.addEventListener("pointerleave", leave);
-
-    return () => {
-      root.removeEventListener("pointermove", move);
-      root.removeEventListener("pointerenter", enter);
-      root.removeEventListener("pointerleave", leave);
-      gsap.killTweensOf(cursor);
-    };
-  }, []);
+  // The cursor is site-wide now (components/CursorRing.tsx) — one ring with
+  // one centre dot for every act, so the hero no longer runs its own.
 
   return (
     <section
@@ -362,15 +326,6 @@ export default function Hero() {
         </span>
       </div>
 
-      {/* Custom cursor — 44px ring with a centre dot, difference blend, hero-scoped. */}
-      <div
-        ref={cursorRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/50 opacity-0 mix-blend-difference"
-        style={{ marginLeft: -22, marginTop: -22, willChange: "transform" }}
-      >
-        <span className="block h-[3px] w-[3px] rounded-full bg-white" />
-      </div>
     </section>
   );
 }

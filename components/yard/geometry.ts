@@ -1337,11 +1337,25 @@ export const SEA = {
   /** The crossfade's blend width, in altitude units. */
   crossFade: 0.05,
   /** The display headline lands as the whole vessel first fits the frame. */
-  typeIn: 0.36,
-  typeInEnd: 0.46,
-  /** Feature-card reveal marks along the pull-back. */
-  cards: [0.5, 0.64, 0.78, 0.9],
+  typeIn: 0.34,
+  typeInEnd: 0.42,
+  /**
+   * Feature-card reveal marks along the pull-back — a quick stagger, then
+   * all four HOLD together around the vessel. They used to hand off one to
+   * the next and the last one was still on screen deep into the whiteout;
+   * the sea act now says its whole piece while the frame is still clear.
+   */
+  cards: [0.42, 0.455, 0.49, 0.525],
   cardFade: 0.05,
+  /**
+   * THE CLEARING. Every word on the sea plate — headline, cards and the
+   * instruments — lifts and fades over this window, and it closes before
+   * the first puff enters (AIR.clouds[0]): the weather arrives to an empty
+   * frame, and nothing is left to be read through cloud.
+   */
+  textOut: [0.68, 0.77],
+  /** How far the type travels as it goes, px — up and away, not down. */
+  textRise: 64,
   /** Clouds drift in over the final stretch. */
   cloudsIn: 0.72,
   /** Odometer's sea leg, km. */
@@ -1359,11 +1373,13 @@ export const AIR = {
    * wings and coverage comes from their density. The window is stated in
    * SEA-act time on purpose — the weather closes in WHILE the drone is
    * still climbing, and the last puff lands exactly as the ascent tops
-   * out (ASC_WIN.out), never after the footage has stopped moving.
+   * out (ASC_WIN.out), never after the footage has stopped moving. It
+   * opens after SEA.textOut has closed, so no card is ever read through a
+   * cloud.
    */
-  clouds: [0.42, 0.8],
+  clouds: [0.79, 0.99],
   /** How long one puff's own entry takes, in that same time base. */
-  cloudRun: 0.2,
+  cloudRun: 0.16,
   /**
    * The crossing: the freighter drags the next section in behind it. It
    * enters as soon as the act does — the weather is already closed by the
@@ -1403,13 +1419,15 @@ export const seaZoomAt = (t: number) => track(SEA.zoom, t);
 export const seaTypeE = (t: number) => span(t, SEA.typeIn, SEA.typeInEnd);
 export const seaCloudsE = (t: number) => smoother(span(t, SEA.cloudsIn, 1));
 
+/** The sea plate clearing itself for the weather: 0 holding, 1 gone. */
+export const seaTextOutE = (t: number) => smoother(span(t, SEA.textOut[0], SEA.textOut[1]));
+
 /** Sea feature cards: same reveal grammar as the route cards. */
 export const seaCardInE = (t: number, i: number) =>
   smoother(span(t, SEA.cards[i], SEA.cards[i] + SEA.cardFade));
+/** In on its own mark, out with everything else — one exit, not four. */
 export function seaCardAlpha(t: number, i: number): number {
-  const next = SEA.cards[i + 1];
-  const out = next === undefined ? 1 : 1 - span(t, next, next + SEA.cardFade);
-  return seaCardInE(t, i) * out;
+  return seaCardInE(t, i) * (1 - seaTextOutE(t));
 }
 export const seaCardGlow = (t: number, i: number) =>
   seaCardInE(t, i) *

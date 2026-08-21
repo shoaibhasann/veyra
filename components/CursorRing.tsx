@@ -11,11 +11,18 @@ import { gsap } from "@/lib/gsap";
  * is what lets a single white ring read correctly on paper, on night and
  * over the ocean footage without anyone writing a colour for each act.
  *
+ * Inside it sits a small dot marking the true pointer position. It is a
+ * CHILD of the ring, so it composites into the ring's blend group and
+ * therefore inverts against whatever is underneath by exactly the same
+ * rule — the dot can never disagree with the ring's colour, on any act.
+ *
  * The native cursor stays: this is an accent, not a replacement, so no
  * hit-target ever becomes harder to aim at. Pointer-only — touch devices
  * and reduced-motion users never see it.
  */
 const RING = 42;
+/** The centre mark, logical px — read at rest, never at hover scale. */
+const DOT = 4;
 /** Pointer-follow easing per frame at 60fps; scaled by real delta. */
 const EASE = 0.16;
 /** What the ring becomes over something clickable. */
@@ -23,10 +30,12 @@ const HOVER_SCALE = 1.55;
 
 export default function CursorRing() {
   const ringRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const ring = ringRef.current;
-    if (!ring) return;
+    const dot = dotRef.current;
+    if (!ring || !dot) return;
     // Pointer-only, and never for readers who asked for less motion.
     if (
       window.matchMedia("(hover: none)").matches ||
@@ -68,6 +77,9 @@ export default function CursorRing() {
       ring.style.transform =
         `translate3d(${(at.x - RING / 2).toFixed(1)}px, ${(at.y - RING / 2).toFixed(1)}px, 0) ` +
         `scale(${scale.toFixed(3)})`;
+      // The dot rides the ring but not its hover scale: the ring opens up
+      // over a link, the mark stays the same size on screen.
+      dot.style.transform = `translate3d(-50%, -50%, 0) scale(${(1 / scale).toFixed(3)})`;
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
@@ -87,6 +99,12 @@ export default function CursorRing() {
       aria-hidden="true"
       className="pointer-events-none fixed top-0 left-0 z-[200] rounded-full border border-white opacity-0 mix-blend-difference will-change-transform"
       style={{ width: RING, height: RING }}
-    />
+    >
+      <span
+        ref={dotRef}
+        className="absolute top-1/2 left-1/2 block rounded-full bg-white will-change-transform"
+        style={{ width: DOT, height: DOT, transform: "translate3d(-50%, -50%, 0)" }}
+      />
+    </div>
   );
 }

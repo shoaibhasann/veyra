@@ -79,6 +79,8 @@ import {
   seaCurtainE,
   seaDriveAE,
   seaPanE,
+  seaTextOutE,
+  AIR,
   airCloudE,
   airPlaneU,
   airT,
@@ -104,11 +106,20 @@ import { useWheelRotation } from "@/hooks/useWheelRotation";
 import { gsap } from "@/lib/gsap";
 import { revertSplit, scrambleText, splitLines } from "@/lib/scramble";
 
-/** The scroll window (in sea-act time) mapped onto the ascent clip's clock. */
-const ASC_WIN = { in: 0.42, out: 0.8 } as const;
+/**
+ * The scroll window (in sea-act time) mapped onto the ascent clip's clock.
+ * It closes with the weather (AIR.clouds[1]), so the drone is still rising
+ * as the last puff lands — the footage never freezes under a moving sky.
+ */
+const ASC_WIN = { in: 0.42, out: 0.99 } as const;
 
-/** Sea-act mark the weather starts closing in — inside the climb, by design. */
-const SEA_CLOUD_IN = 0.4;
+/** How much scroll the loop→ascent hand-over dissolves across, in sea time.
+    The two clips are grade-matched offline; this covers the foam phase. */
+const ASC_MIX = 0.035;
+
+/** Sea-act mark the weather starts closing in — a hair before the first
+    puff's own window, so the layer is up before anything needs to move. */
+const SEA_CLOUD_IN = AIR.clouds[0] - 0.01;
 
 const CHAPTERS = [
   {
@@ -206,6 +217,7 @@ export default function YardSection() {
 
   const shipRootRef = useRef<HTMLDivElement>(null);
   const shipWrapRef = useRef<HTMLDivElement>(null);
+  const shipLoopRef = useRef<HTMLVideoElement>(null);
   const shipAscentRef = useRef<HTMLVideoElement>(null);
   const shipHeroRef = useRef<HTMLDivElement>(null);
 
@@ -347,6 +359,23 @@ export default function YardSection() {
         : [];
       m.ghostW = ghostRef.current?.offsetWidth ?? 0;
     };
+
+    /**
+     * Has the ascent clip decoded a frame yet? A LATCH, not a live read:
+     * seeking a 4K clip drops readyState back to metadata-only for a beat,
+     * so testing it every frame would blink the plate off mid-scrub. Once
+     * one frame exists the element always paints its last one, and the flag
+     * only ever guards the very first hand-over.
+     *
+     * It is armed from the media EVENT, not from a ticker sample: a frame
+     * that happens to land mid-seek reads the same "not ready" a genuinely
+     * empty element does, and polling would have missed the difference.
+     */
+    let ascPainted = (shipAscentRef.current?.readyState ?? 0) >= 2;
+    const onAscData = () => {
+      ascPainted = true;
+    };
+    shipAscentRef.current?.addEventListener("loadeddata", onAscData);
 
     const last = new Map<string, string>();
     const write = (
@@ -688,9 +717,23 @@ export default function YardSection() {
         if (av && av.readyState >= 2 && Math.abs(av.currentTime - ascT) > 0.02) {
           av.currentTime = ascT;
         }
-        // The hand-over is an opacity flip between two instants of the SAME
-        // shot at the same framing — invisible by construction.
-        write(av, "opacity", "ascA", sT > ASC_WIN.in ? "1" : "0");
+        // THE HAND-OVER. A hard flip put two different water phases (and,
+        // before the grade match, two different blues) on consecutive
+        // frames — the "the video changed" jump. It is a short dissolve
+        // now, held at 0 until the ascent has painted at least once: fading
+        // to a video with no frame decoded would flash the plate's own blue.
+        if (av && av.readyState >= 2) ascPainted = true;
+        const ascA = ascPainted ? span(sT, ASC_WIN.in, ASC_WIN.in + ASC_MIX) : 0;
+        write(av, "opacity", "ascA", ascA.toFixed(3));
+        // Once the ascent covers it, the loop is decoding 4K behind an
+        // opaque video — park it, and start it again if the reader climbs
+        // back down to the deck.
+        const lv = shipLoopRef.current;
+        if (lv) {
+          const wantPlay = ascA < 1;
+          if (wantPlay && lv.paused) void lv.play().catch(() => {});
+          else if (!wantPlay && !lv.paused) lv.pause();
+        }
         // And the LINE SYNC: pan is solved so the slot rides the handoff
         // mark the pinned container hangs on — both axes — easing home to
         // the plate's natural centre before the ascent leaves the deck.
@@ -720,14 +763,20 @@ export default function YardSection() {
         // The box stays aboard to the very top of the climb — a small white
         // unit on the centreline, exactly as far away as the ship is.
         write(shipHeroRef.current, "opacity", "heroA", "1");
-        const typeA = seaTypeE(sT) * (1 - span(sT, 0.7, 0.8));
+        // THE CLEARING. Everything the sea act had to say rises out of the
+        // top of the frame and fades — one move, headline and cards
+        // together — and it is finished before the first puff enters, so
+        // the whiteout never has type printed through it.
+        const outE = seaTextOutE(sT);
+        const rise = outE * SEA.textRise;
+        const typeA = seaTypeE(sT) * (1 - outE);
         write(shipTypeRef.current, "opacity", "shipType", typeA.toFixed(3));
         wipeGroup(shipTypeRef.current, seaTypeE(sT));
         write(
           shipTypeRef.current,
           "transform",
           "shipTypeY",
-          `translate3d(0, ${((1 - seaTypeE(sT)) * 30).toFixed(1)}px, 0)`,
+          `translate3d(0, ${((1 - seaTypeE(sT)) * 30 - rise).toFixed(1)}px, 0)`,
         );
         for (let i = 0; i < SHIP_CARDS.length; i++) {
           const el = shipCardRefs[i].current;
@@ -736,7 +785,14 @@ export default function YardSection() {
           wipeGroup(el, inE);
           wipeAccent(el.querySelector<HTMLElement>("[data-card-accent]"), inE, "var(--color-paper)");
           write(el, "opacity", `sc${i}o`, seaCardAlpha(sT, i).toFixed(3));
-          write(el, "transform", `sc${i}t`, `translate3d(0, ${((1 - inE) * 30).toFixed(1)}px, 0)`);
+          write(
+            el,
+            "transform",
+            `sc${i}t`,
+            // The cards leave in the order they arrived, a beat apart, so
+            // the exit reads as a sweep rather than a light switch.
+            `translate3d(0, ${((1 - inE) * 30 - rise * (1 + 0.12 * i)).toFixed(1)}px, 0)`,
+          );
         }
       }
 
@@ -745,6 +801,8 @@ export default function YardSection() {
       //    Then the freighter crosses, dragging the next section's daylight
       //    in behind its tail, seam hidden under the airframe. ──────────────
       const aT = airT(pin);
+      /** The plane's own claim on the instruments — 1 until it arrives. */
+      let planeHud = 1;
       // The weather closes in on the ASCENT's clock, not the air act's: the
       // fleet sails while the drone is still climbing and the last puff is
       // home as the footage tops out — never after it has frozen.
@@ -809,15 +867,20 @@ export default function YardSection() {
         );
         // The instruments belong to the journey, not to the client page the
         // freighter is towing in: they go out with the water behind them.
-        write(
-          hudRef.current,
-          "opacity",
-          "hudA",
-          (1 - clamp01(seamX / (0.45 * m.stageW))).toFixed(3),
-        );
+        planeHud = 1 - clamp01(seamX / (0.45 * m.stageW));
       }
 
       // ── Copy and instruments ───────────────────────────────────────────────
+      // The readouts are text like any other: they leave WITH the sea's
+      // words, before the weather closes, and stay gone — seaT clamps to 1
+      // past the sea act, so nothing brings them back over the white. The
+      // plane keeps its own claim for the case it arrives first.
+      write(
+        hudRef.current,
+        "opacity",
+        "hudA",
+        Math.min(1 - seaTextOutE(sT), planeHud).toFixed(3),
+      );
       write(copyWrapRef.current, "opacity", "copy", bandOpacity(p).toFixed(3));
       // The chapter's own words take the wipe on the band's RISING edge, so
       // the reveal happens while the block fades in rather than after it.
@@ -894,8 +957,11 @@ export default function YardSection() {
 
     const progress = progressRef.current;
 
+    const ascVideo = shipAscentRef.current;
+
     return () => {
       observer.disconnect();
+      ascVideo?.removeEventListener("loadeddata", onAscData);
       ctx.revert();
       progress.p = 0;
     };
@@ -976,6 +1042,7 @@ export default function YardSection() {
         <ShipScene
           rootRef={shipRootRef}
           wrapRef={shipWrapRef}
+          loopRef={shipLoopRef}
           ascentRef={shipAscentRef}
           heroRef={shipHeroRef}
           typeRef={shipTypeRef}
