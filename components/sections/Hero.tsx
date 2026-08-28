@@ -53,9 +53,10 @@ export default function Hero() {
         lines = splitLines(heading, { lineClass: "u-wipe" });
         for (const line of lines) {
           line.style.setProperty("--wipe-final", final);
-          // Shrink-wrap, so the edge crosses glyphs and not the measure.
-          line.style.display = "inline-block";
-          line.style.verticalAlign = "top";
+          // Shrink-wrap, so the edge crosses glyphs and not the measure —
+          // block + fit-content, so the line keeps no strut of its own.
+          line.style.display = "block";
+          line.style.width = "fit-content";
         }
         linesRef.current = lines;
       }

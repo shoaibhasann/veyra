@@ -47,6 +47,27 @@ export function wipeDuration(el: HTMLElement): number {
 }
 
 /**
+ * Where a line's wipe belongs. A rebuilt line is often a single authored
+ * span — `<span class="block text-ink/35">…</span>` — and that span carries
+ * its OWN colour. Painting the gradient on the wrapper would leave an opaque
+ * child sitting on top of it (no reveal at all) and settle the line to the
+ * parent's ink (the tone lost). Descend to the element that actually owns
+ * the text, so the wipe adopts its colour instead of overriding it.
+ */
+function wipeHost(line: HTMLElement): HTMLElement {
+  let host = line;
+  for (;;) {
+    const kids = [...host.childNodes];
+    const els = kids.filter((n): n is HTMLElement => n.nodeType === Node.ELEMENT_NODE);
+    const ownText = kids.some(
+      (n) => n.nodeType === Node.TEXT_NODE && !!(n.nodeValue ?? "").trim(),
+    );
+    if (els.length !== 1 || ownText) return host;
+    host = els[0];
+  }
+}
+
+/**
  * Split `el` into wipe-ready line spans.
  *
  * Genuinely idempotent: if the element is ALREADY split into wipe lines it
@@ -59,25 +80,57 @@ export function prepareWipe(
   el: HTMLElement,
   opts: { edge?: string; mask?: boolean } = {},
 ): HTMLElement[] {
-  const existing = [...el.querySelectorAll<HTMLElement>(".v-line-inner.u-wipe")];
+  const existing = [...el.querySelectorAll<HTMLElement>(".u-wipe")];
   if (el.dataset.split === "lines" && existing.length) return existing;
 
-  // Read the ink FIRST. `.u-wipe` sets color:transparent, so currentColor
-  // inside the gradient would resolve against that very declaration and paint
-  // the revealed text transparent — the colour has to be captured before the
-  // class lands and pinned as a real value.
-  const final = getComputedStyle(el).color;
-  const lines = splitLines(el, { mask: opts.mask ?? false, lineClass: "u-wipe" });
-  const targets: HTMLElement[] = lines.length ? lines : [el];
-  if (!lines.length) el.classList.add("u-wipe");
+  const lines = splitLines(el, { mask: opts.mask ?? false });
+  // A flex or grid box comes back unsplit on purpose: its children are placed
+  // by the container, and replacing them with line boxes would rearrange the
+  // design rather than reveal it. Wipe what actually holds the words — the
+  // element itself when the text is its own, otherwise each text-bearing
+  // child, so a row like `<li><span>Name</span><span class="dot"/></li>`
+  // reveals its name in the name's own colour and leaves the dot alone.
+  let targets: HTMLElement[];
+  if (lines.length) {
+    targets = lines.map(wipeHost);
+  } else {
+    const ownText = [...el.childNodes].some(
+      (n) => n.nodeType === Node.TEXT_NODE && !!(n.nodeValue ?? "").trim(),
+    );
+    const kids = [...el.children].filter(
+      (c): c is HTMLElement => c instanceof HTMLElement && !!(c.textContent ?? "").trim(),
+    );
+    targets = ownText || !kids.length ? [el] : kids;
+  }
   for (const t of targets) {
-    // Shrink-wrap the line. splitLines writes display:block INLINE, which no
-    // stylesheet can outrank — and a full-width box would make the gradient
-    // spend most of its travel sweeping empty measure to the right of a short
-    // line instead of crossing glyphs.
-    if (t !== el) {
-      t.style.display = "inline-block";
-      t.style.verticalAlign = "top";
+    // Read the ink FIRST. `.u-wipe` sets color:transparent, so currentColor
+    // inside the gradient would resolve against that very declaration and
+    // paint the revealed text transparent — the colour has to be captured
+    // before the class lands and pinned as a real value. Per TARGET, not per
+    // element: a two-tone heading settles each line to its own tone.
+    const final = getComputedStyle(t).color;
+    const align = getComputedStyle(t).textAlign;
+    t.classList.add("u-wipe");
+    // Shrink-wrap the line: a full-width box would make the gradient spend
+    // most of its travel sweeping empty measure to the right of a short line
+    // instead of crossing glyphs.
+    //
+    // BLOCK, not inline-block. An inline-block sits in a line box and that
+    // line box keeps its parent's STRUT, so a line whose own leading is
+    // tighter than the inherited one is padded out — every caption line grew
+    // a few px and the split stopped being metrically free (which is what
+    // made the client board's two copies drift apart and print twice).
+    // A block box with a fit-content width shrink-wraps with no line box of
+    // its own at all; alignment, which the inline-block used to get from
+    // text-align, is restored with auto margins.
+    if (lines.length && t !== el) {
+      t.style.display = "block";
+      t.style.width = "fit-content";
+      if (align === "right" || align === "end") t.style.marginLeft = "auto";
+      else if (align === "center") {
+        t.style.marginLeft = "auto";
+        t.style.marginRight = "auto";
+      }
     }
     // Unrevealed until something animates it — set inline so the element is
     // never painted in its final state for a frame before the tween starts.

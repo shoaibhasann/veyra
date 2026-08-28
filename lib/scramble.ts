@@ -133,28 +133,133 @@ export interface SplitLinesOptions {
   lineClass?: string;
 }
 
-function measureWords(el: HTMLElement): { word: string; top: number }[] {
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-  const range = document.createRange();
-  const out: { word: string; top: number }[] = [];
+/**
+ * The smallest thing a line can hold: one WORD (a slice of a text node) or
+ * one element that paints without holding words of its own — a rule, a dot,
+ * an inline icon. Each remembers the chain of ancestors it sat under, which
+ * is what lets the rebuild put its classes back around it.
+ */
+interface LineAtom {
+  /** Ancestors between the split root (exclusive) and this atom, outermost
+      first — the styling that has to survive the rebuild. */
+  chain: Element[];
+  top: number;
+  bottom: number;
+  /** A word, or … */
+  text?: string;
+  /** … an element to clone whole. */
+  node?: Element;
+}
 
-  let node = walker.nextNode() as Text | null;
-  while (node) {
-    const text = node.data;
-    const pattern = /\S+/g;
-    let match = pattern.exec(text);
-    while (match) {
-      range.setStart(node, match.index);
-      range.setEnd(node, match.index + match[0].length);
-      const rects = range.getClientRects();
-      const top = rects.length ? rects[0].top : range.getBoundingClientRect().top;
-      out.push({ word: match[0], top });
-      match = pattern.exec(text);
-    }
-    node = walker.nextNode() as Text | null;
+function chainOf(node: Node, root: HTMLElement): Element[] {
+  const chain: Element[] = [];
+  let parent = node.parentElement;
+  while (parent && parent !== root) {
+    chain.unshift(parent);
+    parent = parent.parentElement;
   }
+  return chain;
+}
 
-  return out;
+/**
+ * Every atom in `el`, in document order, measured against the UNTOUCHED DOM
+ * so the tops are whatever the current wrap actually produced.
+ */
+function collectAtoms(el: HTMLElement): LineAtom[] {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  const range = document.createRange();
+  const atoms: LineAtom[] = [];
+
+  let node = walker.nextNode();
+  while (node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node as Text;
+      const pattern = /\S+/g;
+      let match = pattern.exec(text.data);
+      while (match) {
+        range.setStart(text, match.index);
+        range.setEnd(text, match.index + match[0].length);
+        const rects = range.getClientRects();
+        const r = rects.length ? rects[0] : range.getBoundingClientRect();
+        atoms.push({ chain: chainOf(text, el), top: r.top, bottom: r.bottom, text: match[0] });
+        match = pattern.exec(text.data);
+      }
+    } else {
+      const e = node as Element;
+      // An element that HOLDS text is only an ancestor — its words carry it
+      // into the rebuild. One that holds none but still paints is an atom.
+      if (e.tagName !== "BR" && !(e.textContent ?? "").trim()) {
+        const r = e.getBoundingClientRect();
+        if (r.width || r.height) {
+          atoms.push({ chain: chainOf(e, el), top: r.top, bottom: r.bottom, node: e });
+        }
+      }
+    }
+    node = walker.nextNode();
+  }
+  return atoms;
+}
+
+/**
+ * Rebuild one line, cloning each atom's ancestor chain around it so classes,
+ * inline styles and tone survive the split. Consecutive atoms that shared an
+ * ancestor share its clone, so `<span class="muted">two words</span>` comes
+ * out as one span holding two words rather than two spans holding one each.
+ */
+function fillLine(
+  inner: HTMLElement,
+  group: LineAtom[],
+  line: number,
+  span: Map<Element, { first: number; last: number }>,
+): void {
+  let openChain: Element[] = [];
+  let openClones: HTMLElement[] = [];
+  let wroteAtom = false;
+
+  for (const atom of group) {
+    // Reuse the clones whose source ancestors we are still inside.
+    let depth = 0;
+    while (
+      depth < atom.chain.length &&
+      depth < openChain.length &&
+      atom.chain[depth] === openChain[depth]
+    ) {
+      depth++;
+    }
+    openChain = openChain.slice(0, depth);
+    openClones = openClones.slice(0, depth);
+    for (let i = depth; i < atom.chain.length; i++) {
+      const source = atom.chain[i];
+      const clone = source.cloneNode(false) as HTMLElement;
+      // FRAGMENTATION. An ancestor spanning three lines is cloned into three
+      // boxes, and its spacing would otherwise be charged three times — the
+      // `mt-2` on a caption's role span became a gap between every line of
+      // it. Only the first fragment opens the box and only the last closes
+      // it, which is what a browser does to an inline box it breaks.
+      const reach = span.get(source);
+      if (reach && reach.first < line) {
+        clone.style.marginTop = "0";
+        clone.style.paddingTop = "0";
+        clone.style.borderTopWidth = "0";
+      }
+      if (reach && reach.last > line) {
+        clone.style.marginBottom = "0";
+        clone.style.paddingBottom = "0";
+        clone.style.borderBottomWidth = "0";
+      }
+      (openClones[i - 1] ?? inner).appendChild(clone);
+      openChain.push(source);
+      openClones.push(clone);
+    }
+    const host = openClones[atom.chain.length - 1] ?? inner;
+
+    // The separator goes inside whichever host is current: inline whitespace
+    // collapses the same either side of a tag, and this needs no lookahead.
+    if (wroteAtom) host.appendChild(document.createTextNode(" "));
+    if (atom.node) host.appendChild(atom.node.cloneNode(true));
+    else host.appendChild(document.createTextNode(atom.text ?? ""));
+    wroteAtom = true;
+  }
 }
 
 /**
@@ -163,7 +268,16 @@ function measureWords(el: HTMLElement): { word: string; top: number }[] {
  * Re-run it on resize to re-measure.
  *
  * Returns the inner spans — animate those; their parent is the clipping box.
- * Note: inline markup inside the element is flattened to text by this pass.
+ *
+ * Inline markup SURVIVES: each line is rebuilt by cloning the ancestor chain
+ * around every word, so a muted second line, a bold name or a rule before an
+ * eyebrow comes back exactly as authored. (Flattening it was invisible while
+ * only the hero split itself, and became a site-wide defect the moment every
+ * heading and caption went through here.)
+ *
+ * Flex and grid boxes are left ALONE — their children are laid out by the
+ * container, and replacing them with line boxes would rearrange the design
+ * rather than reveal it. The caller wipes those whole.
  */
 export function splitLines(
   el: HTMLElement,
@@ -173,25 +287,52 @@ export function splitLines(
 
   restore(el);
 
-  const label = accessibleLabel(el);
-  const words = measureWords(el);
-  if (!words.length) return [];
+  const display = getComputedStyle(el).display;
+  if (display.includes("flex") || display.includes("grid")) return [];
 
-  const groups: string[][] = [];
-  let currentTop = Number.NaN;
-  for (const { word, top } of words) {
-    if (!groups.length || Math.abs(top - currentTop) > 1) {
-      groups.push([word]);
-      currentTop = top;
-    } else {
-      groups[groups.length - 1].push(word);
-    }
+  const label = accessibleLabel(el);
+  const atoms = collectAtoms(el);
+  if (!atoms.some((a) => a.text)) return [];
+
+  // Lines come from the WORDS: an element atom can sit anywhere in the line
+  // box (a centred 1px rule does not share the text's top), so it joins the
+  // line its centre is nearest instead of starting one of its own.
+  const tops: number[] = [];
+  for (const atom of atoms) {
+    if (!atom.text) continue;
+    if (!tops.length || Math.abs(atom.top - tops[tops.length - 1]) > 1) tops.push(atom.top);
   }
+  const groups: LineAtom[][] = tops.map(() => []);
+  for (const atom of atoms) {
+    const mid = (atom.top + atom.bottom) / 2;
+    let best = 0;
+    for (let i = 1; i < tops.length; i++) {
+      if (Math.abs(tops[i] - (atom.text ? atom.top : mid)) < Math.abs(tops[best] - (atom.text ? atom.top : mid))) {
+        best = i;
+      }
+    }
+    groups[best].push(atom);
+  }
+
+  // How far each ancestor reaches, in lines — the fragmentation map.
+  const span = new Map<Element, { first: number; last: number }>();
+  groups.forEach((group, line) => {
+    for (const atom of group) {
+      for (const ancestor of atom.chain) {
+        const reach = span.get(ancestor);
+        if (!reach) span.set(ancestor, { first: line, last: line });
+        else reach.last = Math.max(reach.last, line);
+      }
+    }
+  });
 
   const lines: HTMLSpanElement[] = [];
   const frag = document.createDocumentFragment();
 
+  let index = -1;
   for (const group of groups) {
+    index++;
+    if (!group.length) continue;
     const box = document.createElement("span");
     box.className = "v-line";
     box.setAttribute("aria-hidden", "true");
@@ -207,7 +348,7 @@ export function splitLines(
     inner.className = cx("v-line-inner", opts.lineClass);
     inner.style.display = "block";
     inner.style.willChange = "transform";
-    inner.textContent = group.join(" ");
+    fillLine(inner, group, index, span);
 
     box.appendChild(inner);
     frag.appendChild(box);
