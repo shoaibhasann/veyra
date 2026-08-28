@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 const TESTIMONIALS = [
   {
     initials: "NR",
+    portrait: "/assets/client-nadia.webp",
     name: "Nadia Rahman",
     role: "Head of Supply Chain",
     company: "Selaras Foods, Jakarta",
@@ -9,6 +11,7 @@ const TESTIMONIALS = [
   },
   {
     initials: "WO",
+    portrait: "/assets/client-weilin.webp",
     name: "Wei-Lin Ong",
     role: "Logistics Director",
     company: "Kaipara Components, Auckland",
@@ -17,6 +20,7 @@ const TESTIMONIALS = [
   },
   {
     initials: "AM",
+    portrait: "/assets/client-aarav.webp",
     name: "Aarav Menon",
     role: "Chief Operating Officer",
     company: "Tessellate Retail Group, Bengaluru",
@@ -56,11 +60,29 @@ export function TestimonialsBoard() {
             className="border-t border-ink/12 py-9 md:grid md:grid-cols-12 md:gap-10 md:py-11"
           >
             <div className="md:col-span-4 lg:col-span-3">
+              {/* The monogram is not a placeholder to be swapped out — it is
+                  the FLOOR. It sits in the plate underneath the portrait, so
+                  a photo that is missing, still loading or blocked leaves a
+                  designed tile rather than a broken-image glyph, and the two
+                  boards (this one and the copy the aircraft tows in) always
+                  measure the same either way. The fallback is pure layout —
+                  an empty-alt image that fails to load paints nothing, so no
+                  handler (and no client component) is needed to reveal what
+                  is already underneath it. */}
               <span
                 aria-hidden
-                className="font-display flex h-[128px] w-[128px] items-center justify-center rounded-sm bg-ink/[0.055] text-[2rem] font-bold tracking-tight text-ink/60 md:h-[150px] md:w-[150px] md:text-[2.4rem]"
+                className="font-display relative flex h-[128px] w-[128px] items-center justify-center overflow-hidden rounded-sm bg-ink/[0.055] text-[2rem] font-bold tracking-tight text-ink/60 md:h-[150px] md:w-[150px] md:text-[2.4rem]"
               >
                 {t.initials}
+                <img
+                  src={t.portrait}
+                  alt=""
+                  width={600}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 block h-full w-full object-cover select-none"
+                />
               </span>
               <figcaption className="mt-5">
                 <span className="font-display block text-sm font-bold tracking-[0.06em] uppercase">

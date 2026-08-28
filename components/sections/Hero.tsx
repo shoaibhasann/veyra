@@ -112,6 +112,33 @@ export default function Hero() {
       }, root);
     };
 
+    // The heading's lines are cut for one measure; a resized window is a
+    // different one. The reveal has long since played by then, so re-cut and
+    // settle rather than replay it.
+    let width = window.innerWidth;
+    let pending = 0;
+    const onResize = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      window.clearTimeout(pending);
+      pending = window.setTimeout(() => {
+        if (cancelled || !linesRef.current) return;
+        const final = getComputedStyle(heading).color;
+        // data-split stays: splitLines reads it to restore the original
+        // markup before re-measuring, and cutting lines out of the previous
+        // cut would just reproduce the old wrap.
+        const next = splitLines(heading, { lineClass: "u-wipe" });
+        for (const line of next) {
+          line.style.setProperty("--wipe-final", final);
+          line.style.display = "block";
+          line.style.width = "fit-content";
+        }
+        linesRef.current = next;
+        wipeSettle(next);
+      }, 220);
+    };
+    window.addEventListener("resize", onResize);
+
     // Line grouping is measured from real glyph widths, so wait for the
     // webfont — and then for the loader's iris, so the reveal is not spent
     // behind a black plate. whenCurtainOpens resolves on its own timeout if
@@ -124,6 +151,8 @@ export default function Hero() {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(pending);
+      window.removeEventListener("resize", onResize);
       ctx?.revert();
     };
   }, []);

@@ -80,10 +80,20 @@ export function prepareWipe(
   el: HTMLElement,
   opts: { edge?: string; mask?: boolean } = {},
 ): HTMLElement[] {
+  // Lines are cut from the wrap AS IT WAS, so the width they were cut at is
+  // part of the result. Stamp it, and hand the cached split back only while
+  // that width still holds: at any other one the groups re-wrap inside their
+  // own boxes, which is how a line ends up printed twice. Scrubbed callers
+  // (the yard, the intro) drive this every frame, so they re-measure by
+  // themselves the moment a window changes size.
+  const width = String(Math.round(window.innerWidth));
   const existing = [...el.querySelectorAll<HTMLElement>(".u-wipe")];
-  if (el.dataset.split === "lines" && existing.length) return existing;
+  if (el.dataset.split === "lines" && el.dataset.splitWidth === width && existing.length) {
+    return existing;
+  }
 
   const lines = splitLines(el, { mask: opts.mask ?? false });
+  el.dataset.splitWidth = width;
   // A flex or grid box comes back unsplit on purpose: its children are placed
   // by the container, and replacing them with line boxes would rearrange the
   // design rather than reveal it. Wipe what actually holds the words — the
@@ -193,20 +203,28 @@ const LINE_SPAN = 0.62;
 interface Group {
   lines: HTMLElement[];
   last: number[];
+  /** The viewport width these lines were cut at — stale at any other. */
+  width: number;
 }
 
 const groups = new WeakMap<HTMLElement, Group>();
 
 export function wipeGroup(root: HTMLElement | null, p: number, span = LINE_SPAN): void {
   if (!root) return;
+  // The cached lines are only good for the width they were cut at. A frame
+  // costs one integer compare to notice otherwise, and re-preparing hands
+  // back a fresh cut — so a scrubbed block re-measures itself the first
+  // frame after a resize, with no listener anywhere.
+  const width = Math.round(window.innerWidth);
   let g = groups.get(root);
+  if (g && g.width !== width) g = undefined;
   if (!g) {
     // Leaves only: splitting a wrapper would flatten the markup inside it.
     const leaves = [...root.querySelectorAll<HTMLElement>(LEAF)].filter(
       (el) => el.parentElement?.closest(LEAF) == null,
     );
     const lines = (leaves.length ? leaves : [root]).flatMap((el) => prepareWipe(el));
-    g = { lines, last: lines.map(() => -1) };
+    g = { lines, last: lines.map(() => -1), width };
     groups.set(root, g);
   }
 

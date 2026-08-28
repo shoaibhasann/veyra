@@ -337,16 +337,27 @@ export function splitLines(
     box.className = "v-line";
     box.setAttribute("aria-hidden", "true");
     box.style.display = "block";
-    if (mask) {
-      box.style.overflow = "hidden";
-      // Pull the clip below the baseline so descenders survive.
-      box.style.paddingBottom = "0.14em";
-      box.style.marginBottom = "-0.14em";
-    }
+    // Clipped either way. A mask needs it to hide the line rising into
+    // place; every other line needs it because the row inside cannot wrap
+    // (below), so a grouping measured a moment before a resize overflows
+    // instead of reflowing — and a clipped overflow is invisible where a
+    // bleeding one would push the page sideways. The padding/negative-margin
+    // pair cancels in layout and keeps descenders out of the clip.
+    box.style.overflow = "hidden";
+    box.style.paddingBottom = "0.14em";
+    box.style.marginBottom = "-0.14em";
+    if (mask) box.dataset.mask = "1";
 
     const inner = document.createElement("span");
     inner.className = cx("v-line-inner", opts.lineClass);
     inner.style.display = "block";
+    // ONE ROW, always. These words were on one row when they were measured,
+    // and a line that filled the measure exactly would otherwise re-wrap the
+    // moment it is re-boxed: the browser lets a line's trailing space hang
+    // past the edge, a shrink-to-fit box counts it, and 598px of words in a
+    // 598px column becomes two rows. Then the split is no longer metrically
+    // free and two copies of the same board drift apart.
+    inner.style.whiteSpace = "nowrap";
     inner.style.willChange = "transform";
     fillLine(inner, group, index, span);
 
@@ -358,6 +369,25 @@ export function splitLines(
   el.replaceChildren(frag);
   if (label) el.setAttribute("aria-label", label);
   el.dataset.split = "lines";
+
+  // A split is only as good as the measurement behind it, and some elements
+  // cannot be measured when they are asked: a collapsed accordion row, a
+  // hidden panel, a block whose column has not been sized yet. Those report
+  // a wrap the reader will never see, and committing it leaves rows that do
+  // not fit the box they were cut for. So CHECK, against the layout that now
+  // exists — and where a line cannot fit, put the original markup back and
+  // report no split, which leaves the caller wiping the element whole.
+  const misfit = lines.some((inner) => {
+    const box = inner.parentElement as HTMLElement | null;
+    return !box || inner.scrollWidth > box.clientWidth + 1;
+  });
+  if (misfit) {
+    const cached = originals.get(el);
+    if (cached !== undefined) el.innerHTML = cached;
+    el.removeAttribute("aria-label");
+    delete el.dataset.split;
+    return [];
+  }
 
   return lines;
 }

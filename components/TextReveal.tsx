@@ -33,12 +33,19 @@ export default function TextReveal() {
     let ctx: ReturnType<typeof gsap.context> | undefined;
     let cancelled = false;
 
-    const run = () => {
+    // What this pass took ownership of, kept for the re-measure. The
+    // selection filter cannot be re-run to find them again: it rejects
+    // anything already carrying `data-split`, and `closest` matches the
+    // element ITSELF — so a second query would skip every element this
+    // component had split, which is most of them.
+    let owned: HTMLElement[] | null = null;
+
+    const run = (resplit = false) => {
       if (cancelled) return;
       const main = document.querySelector("main");
       if (!main) return;
 
-      const targets = [...main.querySelectorAll<HTMLElement>(SELECTOR)].filter((el) => {
+      const targets = owned ?? [...main.querySelectorAll<HTMLElement>(SELECTOR)].filter((el) => {
         if (el.closest("[data-reveal-skip]")) return false;
         if (el.closest(FORBIDDEN)) return false;
         if (el.querySelector(FORBIDDEN)) return false;
@@ -49,11 +56,25 @@ export default function TextReveal() {
         if (el.parentElement?.closest(SELECTOR)) return false;
         return true;
       });
+      owned = targets;
 
       ctx = gsap.context(() => {
         for (const el of targets) {
+          // The re-measure itself is prepareWipe's business: it stamps the
+          // width its lines were cut at and re-cuts when that no longer
+          // holds. Clearing the split flag here would be actively WRONG —
+          // it is what tells splitLines to put the original markup back
+          // before measuring, and without it the splitter would re-measure
+          // its own line boxes and faithfully reproduce the stale wrap.
           const lines = prepareWipe(el);
-          if (reduce) {
+          const start = el.closest("#testimonials") ? "top bottom" : "top 88%";
+          // Rebuilt after the reader has already passed it: put it straight
+          // into its finished state rather than replaying the reveal under
+          // them (or worse, leaving it unrevealed above the fold).
+          const passed =
+            el.getBoundingClientRect().top <
+            window.innerHeight * (start === "top bottom" ? 1 : 0.88);
+          if (reduce || (resplit && passed)) {
             wipeSettle(lines);
             continue;
           }
@@ -62,7 +83,6 @@ export default function TextReveal() {
           // must be FINISHED at that moment, or the reader watches a revealed
           // heading un-reveal. Starting it the instant it enters from below
           // buys a full screen of runway before the pin lets go.
-          const start = el.closest("#testimonials") ? "top bottom" : "top 88%";
           const tl = gsap.timeline({
             scrollTrigger: { trigger: el, start, once: true },
           });
@@ -84,10 +104,31 @@ export default function TextReveal() {
       document.fonts && document.fonts.status !== "loaded"
         ? document.fonts.ready.then(() => undefined).catch(() => undefined)
         : Promise.resolve();
-    Promise.all([fonts, whenCurtainOpens()]).then(run).catch(run);
+    Promise.all([fonts, whenCurtainOpens()]).then(() => run()).catch(() => run());
+
+    // THE RE-MEASURE. Lines are cut from the wrap as it was; change the
+    // width and every one of them is a promise about a layout that no longer
+    // exists. Debounced through a timer rather than rAF, which a background
+    // tab starves exactly when a window is being resized.
+    let width = window.innerWidth;
+    let pending = 0;
+    const onResize = () => {
+      // Height-only changes (mobile URL bars, devtools) do not re-wrap text.
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      window.clearTimeout(pending);
+      pending = window.setTimeout(() => {
+        if (cancelled) return;
+        ctx?.revert();
+        run(true);
+      }, 220);
+    };
+    window.addEventListener("resize", onResize);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(pending);
+      window.removeEventListener("resize", onResize);
       ctx?.revert();
     };
   }, []);
