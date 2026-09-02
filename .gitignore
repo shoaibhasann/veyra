@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Asset masters stay local. The app loads only the WebP encodes, and the PNG
+# masters were 76MB the page never requested — see ASSETS.md for how to pull
+# one back out of history when a re-cut is needed.
+/public/assets/*.png

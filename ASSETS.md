@@ -11,8 +11,19 @@ pre-rendered camera move is needed.
 
 ## 1. What ships today
 
-Every asset exists three times: a PNG master, a `-cut` variant with the white
-keyed to alpha, and a `.webp` encode of each. **The app loads only the WebP.**
+Every asset was authored three times: a PNG master, a `-cut` variant with the
+white keyed to alpha, and a `.webp` encode of each. **The app loads only the
+WebP, so only the WebP ships** — the PNG masters were removed from the working
+tree (76 MB the page never requested). They remain in git history if a re-cut
+is ever needed:
+
+```
+git log --diff-filter=D --name-only -- 'public/assets/*.png' | head
+git show <commit>^:public/assets/<file>.png > <file>.png
+```
+
+The sea act's two clips are 2560x1440, GOP 4 (every fourth frame a keyframe —
+the scrub depends on it; a default GOP makes scrubbing stutter).
 
 | Asset | Size | What it is | Used by |
 | --- | --- | --- | --- |
