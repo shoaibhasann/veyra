@@ -290,6 +290,32 @@ export default function Footer() {
           </ul>
           <p>All rates in SGD, exclusive of GST</p>
         </div>
+
+        {/* Concept disclaimer: Veyra is a fictional brand, so say so plainly
+            rather than leaving a convincing fake freight operator on the
+            internet. Everything above this line is invented. */}
+        <p className="border-t border-ink/12 pt-8 pb-10 font-mono text-[0.62rem] leading-relaxed tracking-[0.16em] text-ink/40 uppercase">
+          Veyra is a fictional brand. This site is a design concept built by{" "}
+          <a
+            href="https://zyntec.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline transition-colors hover:text-ink"
+          >
+            Zyntec Studio
+          </a>{" "}
+          to demonstrate 3D web capability. Art direction inspired by{" "}
+          <a
+            href="https://unitedcarriers.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline transition-colors hover:text-ink"
+          >
+            unitedcarriers.com
+          </a>
+          . All companies, testimonials, figures and contact details shown are
+          invented. Not affiliated with any real freight operator.
+        </p>
       </div>
 
       {/* The sign-off: the wordmark as living dots — the pointer scatters
