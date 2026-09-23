@@ -87,13 +87,21 @@ export function prepareWipe(
   // (the yard, the intro) drive this every frame, so they re-measure by
   // themselves the moment a window changes size.
   const width = String(Math.round(window.innerWidth));
-  const existing = [...el.querySelectorAll<HTMLElement>(".u-wipe")];
-  if (el.dataset.split === "lines" && el.dataset.splitWidth === width && existing.length) {
-    return existing;
+  // The stamp records that this element was PREPARED at this width, not that
+  // it was split at it — some elements are deliberately never split (a flex
+  // row) and some cannot be (a panel with no width yet). Keying the cache on
+  // the split alone meant those elements missed it on every single call, and
+  // a scrubbed block re-split itself every frame: each pass rewound `--wipe`
+  // to 0, so text the reader had already watched arrive kept vanishing.
+  if (el.dataset.wipeAt === width) {
+    const ready = [...el.querySelectorAll<HTMLElement>(".u-wipe")];
+    if (ready.length) return ready;
+    if (el.classList.contains("u-wipe")) return [el];
   }
 
   const lines = splitLines(el, { mask: opts.mask ?? false });
   el.dataset.splitWidth = width;
+  el.dataset.wipeAt = width;
   // A flex or grid box comes back unsplit on purpose: its children are placed
   // by the container, and replacing them with line boxes would rearrange the
   // design rather than reveal it. Wipe what actually holds the words — the

@@ -147,6 +147,9 @@ interface LineAtom {
   bottom: number;
   /** A word, or … */
   text?: string;
+  /** True for the tail of a word the browser broke: it continues the word
+      above rather than starting a new one, so no separator precedes it. */
+  joined?: boolean;
   /** … an element to clone whole. */
   node?: Element;
 }
@@ -177,11 +180,54 @@ function collectAtoms(el: HTMLElement): LineAtom[] {
       const pattern = /\S+/g;
       let match = pattern.exec(text.data);
       while (match) {
-        range.setStart(text, match.index);
-        range.setEnd(text, match.index + match[0].length);
+        const from = match.index;
+        const to = from + match[0].length;
+        range.setStart(text, from);
+        range.setEnd(text, to);
         const rects = range.getClientRects();
-        const r = rects.length ? rects[0] : range.getBoundingClientRect();
-        atoms.push({ chain: chainOf(text, el), top: r.top, bottom: r.bottom, text: match[0] });
+        if (rects.length > 1) {
+          // A WORD THE BROWSER BROKE. "cross-border" at a line end becomes
+          // "cross-" and "border" on two rows, and a word measured by its
+          // first rect alone would be filed whole onto the first of them —
+          // handing that line more text than it can hold. Rare, and it used
+          // to hide: the rebuilt line simply re-wrapped. It cannot hide now
+          // that a line may not wrap, so walk the characters and file each
+          // fragment on the row it is actually drawn on.
+          let runStart = from;
+          let runTop = NaN;
+          let runBottom = NaN;
+          for (let i = from; i <= to; i++) {
+            let top = NaN;
+            let bottom = NaN;
+            if (i < to) {
+              range.setStart(text, i);
+              range.setEnd(text, i + 1);
+              const cr = range.getClientRects()[0] ?? range.getBoundingClientRect();
+              top = cr.top;
+              bottom = cr.bottom;
+            }
+            if (Number.isNaN(runTop)) {
+              runTop = top;
+              runBottom = bottom;
+              continue;
+            }
+            if (i === to || Math.abs(top - runTop) > 1) {
+              atoms.push({
+                chain: chainOf(text, el),
+                top: runTop,
+                bottom: runBottom,
+                text: text.data.slice(runStart, i),
+                joined: runStart > from,
+              });
+              runStart = i;
+              runTop = top;
+              runBottom = bottom;
+            }
+          }
+        } else {
+          const r = rects.length ? rects[0] : range.getBoundingClientRect();
+          atoms.push({ chain: chainOf(text, el), top: r.top, bottom: r.bottom, text: match[0] });
+        }
         match = pattern.exec(text.data);
       }
     } else {
@@ -255,7 +301,7 @@ function fillLine(
 
     // The separator goes inside whichever host is current: inline whitespace
     // collapses the same either side of a tag, and this needs no lookahead.
-    if (wroteAtom) host.appendChild(document.createTextNode(" "));
+    if (wroteAtom && !atom.joined) host.appendChild(document.createTextNode(" "));
     if (atom.node) host.appendChild(atom.node.cloneNode(true));
     else host.appendChild(document.createTextNode(atom.text ?? ""));
     wroteAtom = true;
@@ -337,16 +383,18 @@ export function splitLines(
     box.className = "v-line";
     box.setAttribute("aria-hidden", "true");
     box.style.display = "block";
-    // Clipped either way. A mask needs it to hide the line rising into
-    // place; every other line needs it because the row inside cannot wrap
-    // (below), so a grouping measured a moment before a resize overflows
-    // instead of reflowing — and a clipped overflow is invisible where a
-    // bleeding one would push the page sideways. The padding/negative-margin
-    // pair cancels in layout and keeps descenders out of the clip.
-    box.style.overflow = "hidden";
-    box.style.paddingBottom = "0.14em";
-    box.style.marginBottom = "-0.14em";
-    if (mask) box.dataset.mask = "1";
+    // Clipping belongs to the MASK, and only to it: it hides the line while
+    // it rises into place. Clipping every line was defensive — against a
+    // grouping measured just before a resize — and it cost more than it
+    // saved, because a line that legitimately sits a few px past its column
+    // (a row that filled the measure exactly; see nowrap below) lost the end
+    // of its last word to it. A stale grouping now gets re-measured instead.
+    if (mask) {
+      box.style.overflow = "hidden";
+      // Pull the clip below the baseline so descenders survive.
+      box.style.paddingBottom = "0.14em";
+      box.style.marginBottom = "-0.14em";
+    }
 
     const inner = document.createElement("span");
     inner.className = cx("v-line-inner", opts.lineClass);
@@ -377,9 +425,18 @@ export function splitLines(
   // not fit the box they were cut for. So CHECK, against the layout that now
   // exists — and where a line cannot fit, put the original markup back and
   // report no split, which leaves the caller wiping the element whole.
+  // Was the measurement even real? A collapsed accordion row, a hidden panel
+  // or a column that has not been sized yet all report a wrap the reader will
+  // never see. Those miss by a mile — no width at all, or a line that needs
+  // half again the space it was given. A line a few px past its column is NOT
+  // that: it is a row that filled the measure exactly, and rejecting the
+  // whole split over it left the block wiped as one box, which is the state
+  // the reveal looked broken in.
   const misfit = lines.some((inner) => {
     const box = inner.parentElement as HTMLElement | null;
-    return !box || inner.scrollWidth > box.clientWidth + 1;
+    if (!box) return true;
+    const room = box.clientWidth;
+    return room < 1 || inner.scrollWidth > room * 1.15 + 8;
   });
   if (misfit) {
     const cached = originals.get(el);
