@@ -235,14 +235,21 @@ export default function ShipScene({
           transform: "translate(-50%, -50%)",
         }}
       >
+        {/* NEITHER CLIP FETCHES ITSELF. 68MB of ocean has no business
+            downloading for a reader who never leaves the hero, and most
+            never do — the yard primes both when it comes within a viewport
+            of the fold, which leaves it twenty-one viewports of scrolling
+            before the sea act needs a frame. `autoPlay` is gone for the
+            same reason: it is an intent to play, which browsers honour over
+            a preload hint, and the ticker starts this clip anyway the
+            moment the sea act opens. */}
         <video
           ref={loopRef}
           src="/assets/sea-loop.mp4"
-          autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
           className="absolute inset-0 block h-full w-full select-none"
           style={{ objectFit: "fill" }}
         />
@@ -251,7 +258,7 @@ export default function ShipScene({
           src="/assets/sea-ascent.mp4"
           muted
           playsInline
-          preload="auto"
+          preload="none"
           className="absolute inset-0 block h-full w-full opacity-0 select-none"
           style={{ objectFit: "fill" }}
         />

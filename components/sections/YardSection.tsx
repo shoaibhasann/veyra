@@ -103,7 +103,7 @@ import {
 import { prepareWipe, wipeAccent, wipeGroup } from "@/lib/wipe";
 import { JUNCTION, ROAD_WIDTH, roadUnitPx, sampleTravel } from "@/components/yard/road";
 import { useWheelRotation } from "@/hooks/useWheelRotation";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { revertSplit, scrambleText, splitLines } from "@/lib/scramble";
 
 /**
@@ -931,6 +931,27 @@ export default function YardSection() {
                   : chapterFor(storyQ(self.progress));
             setChapter((prev) => (prev === next ? prev : next));
           },
+        },
+      });
+
+      // THE FETCH, ON APPROACH. The clips carry preload="none" so a reader
+      // who never leaves the hero never pays for 68MB of ocean — and most
+      // never do. This arms them one viewport before the section arrives,
+      // which leaves twenty-one viewports of scrolling before the sea act
+      // asks for a frame; the dissolve already waits on `loadeddata` and the
+      // scrub already guards on readyState, so arriving early costs nothing
+      // and arriving late degrades to the loop rather than breaking. Mobile
+      // and reduced-motion never reach here: this effect is gated on `live`.
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        once: true,
+        onEnter: () => {
+          for (const v of [shipLoopRef.current, shipAscentRef.current]) {
+            if (!v || v.preload === "auto") continue;
+            v.preload = "auto";
+            v.load();
+          }
         },
       });
 
