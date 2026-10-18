@@ -104,7 +104,7 @@ import {
   truckPose,
 } from "@/components/yard/geometry";
 import { prepareWipe, wipeAccent, wipeGroup } from "@/lib/wipe";
-import { JUNCTION, LANE_LINE_F, ROAD_WIDTH, roadUnitPx, sampleTravel } from "@/components/yard/road";
+import { BEND_R, JUNCTION, LANE_LINE_F, ROAD_WIDTH, roadUnitPx, sampleTravel } from "@/components/yard/road";
 import { useWheelRotation } from "@/hooks/useWheelRotation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { revertSplit, scrambleText, splitLines } from "@/lib/scramble";
@@ -158,13 +158,24 @@ const CHAPTERS = [
  */
 const BAND = { in: 0.505, up: 0.545, down: 0.6, out: 0.635 } as const;
 
+/**
+ * PORTRAIT gives the words their own room UNDER the rig, so they need not
+ * wait for the box to settle to stay off the machinery: the chapter reads
+ * beneath the scene from the moment the yard pins, captioning the lift it
+ * describes, and leaves on the desktop's own mark — still before the night
+ * floor rises. Without it a phone opened the act on half a screen of paper.
+ */
+const BAND_NARROW = { in: 0.002, up: 0.04, down: 0.6, out: 0.635 } as const;
+
+type Band = typeof BAND | typeof BAND_NARROW;
+
 /** Chapter hand-off is for the eyebrow alone, and lands while the band is out. */
 const CHAPTER_FLIP = 0.8;
 
-const bandOpacity = (p: number) =>
-  span(p, BAND.in, BAND.up) * (1 - span(p, BAND.down, BAND.out));
+const bandOpacity = (p: number, b: Band = BAND) =>
+  span(p, b.in, b.up) * (1 - span(p, b.down, b.out));
 
-const chapterFor = (p: number) => (p < BAND.in ? -1 : p < CHAPTER_FLIP ? 0 : 1);
+const chapterFor = (p: number, b: Band = BAND) => (p < b.in ? -1 : p < CHAPTER_FLIP ? 0 : 1);
 
 /** Ink on paper, paper on night — the same hand-off the speed readout makes. */
 const toneColor = (t: number) =>
@@ -192,6 +203,9 @@ interface Metrics {
       lane dashes, its two rows and the truck that drives it all follow. */
   bandCentre: number;
   bandH: number;
+  /** The overhead truck's laid-out box width, px — the rig's single source
+      for its size, so the CSS token and the run's final scale cannot drift. */
+  topW: number;
   /** Taller than it is wide — the phone pose, measured once per layout. */
   portrait: boolean;
   /** The measure the cloud fleet is sized against. */
@@ -276,6 +290,7 @@ export default function YardSection() {
     ground: STAGE.ground,
     bandCentre: TILT_BAND.wide.centre,
     bandH: TILT_BAND.wide.height,
+    topW: 0,
     portrait: false,
     cloudBase: 0,
     stripW: 0,
@@ -367,10 +382,26 @@ export default function YardSection() {
     const measure = () => {
       const m = metricsRef.current;
       m.portrait = portrait.matches;
+      // The stage's own size first: everything below lays out against it,
+      // and reading it last left the route copy and the cloud fleet sized
+      // against the PREVIOUS layout — wrong on first paint and one rotation
+      // behind ever after.
+      m.stageW = stage.clientWidth;
+      m.stageH = stage.clientHeight;
       m.ground = m.portrait ? STAGE.groundNarrow : STAGE.ground;
       const band = tiltBand(portrait.matches);
       m.bandCentre = band.centre;
       m.bandH = band.height;
+      m.topW = topWrapRef.current?.offsetWidth || 0.53 * stage.clientWidth;
+      // PORTRAIT SOLVES ITS BAND FROM THE TRUCK. One road width per truck
+      // body is the network's own proportion, so a band drawn at exactly
+      // that puts K0 * su equal to the body — and from there the run's
+      // camera and the truck's scale are the SAME linear blend, locked
+      // together for the whole pull-back. Landscape keeps its authored,
+      // deliberately deeper band.
+      if (portrait.matches) {
+        m.bandH = (ROAD_WIDTH * TOP_BODY_W * m.topW) / stage.clientHeight;
+      }
       // THE BAND AND ITS ROAD, from one number. The night strip is one
       // carriageway wide, so the dashes are the network's own stroke scaled
       // by that width — authored once here rather than twice in the markup.
@@ -413,39 +444,36 @@ export default function YardSection() {
         }
       }
 
-      // THE SOUTH RUN, IN ONE COLUMN. Landscape has white field on BOTH
-      // sides of the arm, which is why the headline reads left of it and
-      // the cards swap right. A phone has one field — the one the junction
-      // vacates by parking at RUN.narrowPark — so the act stacks into it in
-      // reading order: headline, its paragraph, then the swapping card
-      // directly under the measure it just read. Both edges are solved off
-      // the SAME road unit the carriageway is drawn with, so the type
-      // cannot touch tarmac at any viewport, and the card's top is read
-      // back off the laid-out paragraph rather than guessed.
+      // THE SOUTH RUN ON A PHONE. The arm runs down the centre of the frame
+      // in both orientations, so the copy keeps its authored sides — the
+      // headline reads left of the carriageway, the cards swap right — and
+      // only the MEASURE changes. Both columns are solved off the same road
+      // unit the carriageway is drawn with, so the type stops exactly where
+      // the tarmac starts instead of breaking mid-word under it. They start
+      // where the bend's filleted inner edge has become the straight south
+      // arm (BEND_R below the junction): above that line the curve cuts
+      // into the left field's corner and took the headline's last letters.
       const routeLeft = routeLeftRef.current;
       if (portrait.matches) {
-        const armHalf = (ROAD_WIDTH * roadUnitPx(m.stageW, m.stageH)) / 2;
+        const su = roadUnitPx(m.stageW, m.stageH);
+        const armHalf = (ROAD_WIDTH * su) / 2;
         const gut = 0.043 * m.stageW;
-        const colW = (JUNCTION.x + RUN.narrowPark) * m.stageW - armHalf - 2 * gut;
-        const headTop = JUNCTION.y * m.stageH + armHalf + 0.024 * m.stageH;
-        const leftPc = `${((gut / m.stageW) * 100).toFixed(3)}%`;
+        const colW = JUNCTION.x * m.stageW - armHalf - 2 * gut;
+        const rightX = JUNCTION.x * m.stageW + armHalf + gut;
+        const top = `${(((JUNCTION.y * m.stageH + BEND_R * su + 0.024 * m.stageH) / m.stageH) * 100).toFixed(3)}%`;
         const widthPc = `${((colW / m.stageW) * 100).toFixed(3)}%`;
         if (routeLeft) {
-          routeLeft.style.left = leftPc;
+          routeLeft.style.left = `${((gut / m.stageW) * 100).toFixed(3)}%`;
           routeLeft.style.width = widthPc;
-          routeLeft.style.top = `${((headTop / m.stageH) * 100).toFixed(3)}%`;
+          routeLeft.style.top = top;
         }
-        // Reading the laid-out height back costs one reflow inside a
-        // function that is already measuring, and buys a card that can
-        // never land on the paragraph however the copy rewraps.
-        const cardTop = headTop + (routeLeft?.offsetHeight ?? 0) + 0.024 * m.stageH;
         for (const r of cardRefs) {
           const el = r.current;
           if (!el) continue;
-          el.style.left = leftPc;
+          el.style.left = `${((rightX / m.stageW) * 100).toFixed(3)}%`;
           el.style.width = widthPc;
           el.style.maxWidth = "none";
-          el.style.top = `${((cardTop / m.stageH) * 100).toFixed(3)}%`;
+          el.style.top = top;
         }
       } else {
         if (routeLeft) {
@@ -496,8 +524,6 @@ export default function YardSection() {
       if (side) side.style.transformOrigin = `50% ${(m.ground * 100).toFixed(2)}%`;
       m.worldW = world.clientWidth;
       m.worldH = world.clientHeight;
-      m.stageW = stage.clientWidth;
-      m.stageH = stage.clientHeight;
       m.stripW = stripRef.current?.offsetWidth ?? 0;
       // Each roadside panel reveals on ITS OWN arrival, so the ticker needs
       // their positions inside the strip, not just the strip's width.
@@ -734,21 +760,52 @@ export default function YardSection() {
       const shr = runShrinkE(rT);
       const jx = JUNCTION.x * m.stageW;
       const jy = JUNCTION.y * m.stageH;
-      const K0 = ((TILT.bottom - TILT.seamEnd) * m.stageH) / (ROAD_WIDTH * su);
+      // K0 IS AN INVARIANT, NOT A CONSTANT: the west arm must BE the band at
+      // the handoff frame. It was stated as TILT.bottom - TILT.seamEnd, which
+      // is the LANDSCAPE band's height — true there, wrong on a phone, where
+      // the band is drawn at TILT_BAND.narrow.height instead. The run act
+      // therefore opened on a camera six times too close in portrait (14.45
+      // against the 2.41 the drawn band asks for): the whole frame was
+      // carriageway and a single lane dash read as a giant white diagonal,
+      // with the truck sliding backwards as the scale collapsed. Reading the
+      // MEASURED band height closes the loop — landscape is byte-identical,
+      // because m.bandH there IS 0.63.
+      const K0 = (m.bandH * m.stageH) / (ROAD_WIDTH * su);
       const K = K0 + (1 - K0) * shr;
-      const rtx =
-        (RUN.junctionOff * (1 - shr) + (m.portrait ? RUN.narrowPark * shr : 0)) * m.stageW;
-      const rty =
-        ((TILT.seamEnd + TILT.bottom) / 2 - JUNCTION.y) * m.stageH * (1 - shr);
+      const rtx = (m.portrait ? RUN.junctionOffNarrow : RUN.junctionOff) * m.stageW * (1 - shr);
+      // Same invariant, other axis: the west arm sits ON the drawn band's
+      // centre at the handoff. (seamEnd + bottom) / 2 is the landscape band's
+      // centre; a phone draws its band at TILT_BAND.narrow.centre, so the arm
+      // used to land 0.195 of the frame below the band it replaces and the
+      // truck dropped with it. m.bandCentre is the band actually drawn.
+      const rty = (m.bandCentre - JUNCTION.y) * m.stageH * (1 - shr);
       // The truck's raw pose under that camera comes first: once it descends
       // past the follow line on the south leg, the WHOLE camera pans down
       // with it (the hinge keeps the pan continuous), so the horizontal arm
       // rides off the top and the vertical road takes the frame — the
       // reference's final column framing — with the vehicle never leaving it.
-      const here = sampleTravel(runU(rT));
+      const here = sampleTravel(runU(rT) * (m.portrait ? RUN.travelNarrow : 1));
       const px = K * (here.x - jx) + jx + rtx;
       const pyRaw = K * (here.y - jy) + jy + rty;
-      const pan = Math.max(0, pyRaw - 0.7 * m.stageH);
+      // The follow line. Landscape holds the truck at 0.7 of the frame and
+      // pans the ship's plate to meet it later. Portrait cannot pan that
+      // plate vertically (it covers the short axis exactly), so it SOLVES
+      // the line instead: the box's on-screen y after the sea act's short
+      // roll and the curtain's head start equals the hero slot's y at the
+      // handoff. The cargo then changes vehicles on one point, no jump.
+      let follow = 0.7 * m.stageH;
+      if (m.portrait) {
+        const plateW = Math.max(m.stageW, m.stageH * (SHIP_FRAME.w / SHIP_FRAME.h));
+        const plateH = plateW * (SHIP_FRAME.h / SHIP_FRAME.w);
+        const slotY = (m.stageH - plateH) / 2 + ascentSlotAt(ASCENT.tIn).y * plateH;
+        const sclEnd = su / TOP_BODY_W / m.topW;
+        // Heading south, the sprite's +x is screen +y: the deck centre sits
+        // this far along the run from the body centre the pose is solved at.
+        const deckOff = sclEnd * (TOP_DECK.x + TOP_DECK.w / 2 - TOP_BODY_CX) * m.topW;
+        const liftA = seaCurtainE(SEA.driveIn[1]) * 1.05 * m.stageH;
+        follow = slotY - deckOff + liftA - SEA.driveDNarrow * m.stageH;
+      }
+      const pan = Math.max(0, pyRaw - follow);
       const py = pyRaw - pan;
 
       write(roadGroupRef.current, "opacity", "roadO", rT > 0 ? "1" : "0");
@@ -803,10 +860,10 @@ export default function YardSection() {
         if (sT > 0) {
           const liftA = seaCurtainE(SEA.driveIn[1]) * 1.05 * m.stageH;
           Y +=
-            seaDriveAE(sT) * SEA.driveD * m.stageH +
+            seaDriveAE(sT) * (m.portrait ? SEA.driveDNarrow : SEA.driveD) * m.stageH +
             (sT > SEA.driveIn[1] ? Math.max(0, lift - liftA) : 0);
         }
-        const sclFinal = su / TOP_BODY_W / (0.53 * m.stageW);
+        const sclFinal = su / TOP_BODY_W / m.topW;
         const scl = 1 + (sclFinal - 1) * shr;
         topPose =
           `translate(calc(${X.toFixed(1)}px - ${(TOP_BODY_CX * 100).toFixed(4)}%), ` +
@@ -899,18 +956,15 @@ export default function YardSection() {
         // And the LINE SYNC: pan is solved so the slot rides the handoff
         // mark the pinned container hangs on — both axes — easing home to
         // the plate's natural centre before the ascent leaves the deck.
-        const panE = seaPanE(sT);
         // Portrait keeps the X half of that sync and drops the Y half. X,
-        // because the run act parks its junction RUN.narrowPark to the
-        // right: the container hangs pinned on screen through the curtain,
-        // so the slot has to meet the truck where the truck actually is —
-        // the plate is 1443px wide inside a 375px window, which is slack
-        // enough to spend. Y, because the same plate meets the viewport
-        // EXACTLY on the short axis: there is no vertical slack at all, and
-        // any offset is the plate's own blue showing above or below.
-        const panX = m.portrait
-          ? panE * (RUN.narrowPark * m.stageW - (SHIP_SLOT.x - 0.5) * plateW)
-          : -panE * zoomS * (SHIP_SLOT.x - 0.5) * plateW;
+        // because the slot sits half a percent off the plate's centre, and on
+        // a 1300px plate that is 7px off the truck's line — the plate has
+        // slack to spend sideways. Y, because the plate meets the viewport
+        // EXACTLY on the short axis: any offset there is the plate's own blue
+        // above or below. The run's follow line brings the box to the slot's
+        // height instead (see `follow`).
+        const panE = seaPanE(sT);
+        const panX = -panE * zoomS * (SHIP_SLOT.x - 0.5) * plateW;
         const panY = m.portrait
           ? 0
           : panE * (SEA.handoffY * m.stageH - 0.5 * m.stageH - zoomS * (SHIP_SLOT.y - 0.5) * plateH);
@@ -1058,10 +1112,11 @@ export default function YardSection() {
         "hudA",
         Math.min(1 - seaTextOutE(sT), planeHud).toFixed(3),
       );
-      write(copyWrapRef.current, "opacity", "copy", bandOpacity(p).toFixed(3));
+      const band = m.portrait ? BAND_NARROW : BAND;
+      write(copyWrapRef.current, "opacity", "copy", bandOpacity(p, band).toFixed(3));
       // The chapter's own words take the wipe on the band's RISING edge, so
       // the reveal happens while the block fades in rather than after it.
-      const bandIn = span(p, BAND.in, BAND.up);
+      const bandIn = span(p, band.in, band.up);
       wipeGroup(headlineRef.current, bandIn);
       wipeGroup(panelRef.current, bandIn);
       wipeGroup(exitRef.current, span(p, BEAT.run, BEAT.run + 0.05));
@@ -1105,7 +1160,10 @@ export default function YardSection() {
                 ? 3
                 : self.progress > ACTS.run + 0.025
                   ? 2
-                  : chapterFor(storyQ(self.progress));
+                  : chapterFor(
+                      storyQ(self.progress),
+                      metricsRef.current.portrait ? BAND_NARROW : BAND,
+                    );
             setChapter((prev) => (prev === next ? prev : next));
           },
         },

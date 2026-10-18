@@ -59,7 +59,7 @@ function DotIcon({ rows }: { rows: readonly string[] }) {
   return (
     <svg
       viewBox={`0 0 ${cols} ${rows.length}`}
-      className="h-9 w-auto sm:h-11"
+      className="h-8 w-auto sm:h-11"
       aria-hidden="true"
       focusable="false"
     >
@@ -99,12 +99,17 @@ export default function RouteContent({ leftRef, cardRefs }: RouteContentProps) {
       {/* Below the instrument cluster, not beside it: at 27% the display line
           ran straight through the speed readout and its odometer, which sit
           top-left of the same stage. */}
+      {/* On a phone the column is ~37% of the width (half the frame less a
+          half-carriageway and two gutters), and split lines never wrap — so
+          the display size is stated in vw against that measure: "Reliability,"
+          runs ~6.4 ems, and 5.5vw keeps it inside the column at every phone
+          width instead of hanging its comma over the kerb. */}
       <div ref={leftRef} className="absolute top-[38%] left-[4%] w-[34%] opacity-0">
-        <p className="u-display text-[clamp(1.8rem,4vw,4.2rem)] leading-[0.95]">
+        <p className="u-display text-[5.5vw] leading-[0.95] sm:text-[clamp(1.8rem,4vw,4.2rem)]">
           <span className="block text-ink/35">Reliability,</span>
           <span className="block">routed.</span>
         </p>
-        <p className="mt-5 max-w-[38ch] text-[0.8125rem] leading-[1.5] text-ink/65 sm:mt-6 sm:text-base sm:leading-relaxed">
+        <p className="mt-4 max-w-[38ch] text-[0.75rem] leading-[1.5] text-ink/65 sm:mt-6 sm:text-base sm:leading-relaxed">
           Every service under one roof and one accountable team — so the lane
           moves the way your business demands: predictably, transparently,
           without excuses.
@@ -121,11 +126,11 @@ export default function RouteContent({ leftRef, cardRefs }: RouteContentProps) {
           <span data-card-accent className="block text-ink">
             <DotIcon rows={card.icon} />
           </span>
-          <h3 className="font-display mt-4 text-lg leading-tight font-bold tracking-tight uppercase sm:mt-5 sm:text-2xl">
+          <h3 className="font-display mt-3 text-base leading-tight font-bold tracking-tight uppercase sm:mt-5 sm:text-2xl">
             <span className="block">{card.title[0]}</span>
             <span className="block">{card.title[1]}</span>
           </h3>
-          <p className="mt-3 text-[0.8125rem] leading-[1.5] text-ink/65 sm:mt-4 sm:text-base sm:leading-relaxed">
+          <p className="mt-2 text-[0.75rem] leading-[1.5] text-ink/65 sm:mt-4 sm:text-base sm:leading-relaxed">
             {card.copy}
           </p>
         </div>

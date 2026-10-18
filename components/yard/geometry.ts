@@ -177,10 +177,14 @@ export const STAGE = {
   ground: 0.77,
   /**
    * PORTRAIT ground line. A phone has height to spare and width to spare
-   * nothing, so the rig sits high and the chapter's words take the room
-   * underneath — at the landscape 0.77 the copy came up THROUGH the truck.
+   * nothing: at 120vw the lift beat (machine, stack, outstretched spreader)
+   * already spans the whole screen, so the rig cannot be drawn any larger
+   * without cropping it. What it CAN do is sit centred in the frame the HUD
+   * and the chapter's words leave between them. At 0.5 it hugged the HUD
+   * with a third of the screen blank under it; at the landscape 0.77 the
+   * copy came up THROUGH the truck.
    */
-  groundNarrow: 0.5,
+  groundNarrow: 0.6,
 } as const;
 
 // ── Authored scale and depth ──────────────────────────────────────────────────
@@ -1126,8 +1130,14 @@ export const TILT = {
  */
 export const TILT_BAND = {
   wide: { centre: 0.655, height: 0.63 },
-  /** Portrait keeps the road in proportion to the truck that drives it. */
-  narrow: { centre: 0.46, height: 0.105 },
+  /**
+   * PORTRAIT. The centre sits in the middle of the frame the HUD leaves
+   * free, not under it. The height here is only a first-paint value: the rig
+   * SOLVES the portrait band from the overhead truck it carries (one road
+   * width per truck body, the network's own proportion), so road and truck
+   * scale as one through the whole pull-back instead of drifting apart.
+   */
+  narrow: { centre: 0.55, height: 0.147 },
 } as const;
 
 export const tiltBand = (portrait: boolean) =>
@@ -1281,15 +1291,23 @@ export const RUN = {
   /** How far right the junction is parked at the handoff, stage widths. */
   junctionOff: 1.6,
   /**
-   * PORTRAIT PARKS THE JUNCTION OFF-CENTRE. Landscape has white field on
-   * BOTH sides of the south arm — headline left, cards right. A phone does
-   * not: the same arm splits 375px into a 145px field and a 160px one, and
-   * the copy written for those columns breaks mid-word and runs under the
-   * tarmac. So the sweep simply stops short of centre, leaving one honest
-   * column the full copy can live in. It rides the sweep's own easing, so
-   * the handoff frame — where the west arm IS the band — is untouched.
+   * The same, upright. The truck's sideways swing as the junction sweeps in
+   * is the balance of two terms — the sweep pushing right, the camera's
+   * zoom on the approach pulling left — and a phone's band opens on a
+   * shallower zoom (K0 * su is a smaller share of the width). At 1.6 the
+   * truck swung to 0.78 of the frame and ran off the right edge; this puts
+   * the swing back on the desktop's own amplitude.
    */
-  narrowPark: 0.24,
+  junctionOffNarrow: 1.36,
+  /**
+   * How much of the travelled route a phone covers. Portrait holds the truck
+   * at a follow line solved from the ship's slot (SEA.driveDNarrow), which is
+   * higher in the frame than the desktop's 0.7 — so the camera pans further
+   * to keep it there, and over the full south leg that pan lifted the west
+   * arm into the speed readout. Stopping the run a short way up the same
+   * road (a uniform scale, so the pace never hitches) keeps the arm clear.
+   */
+  travelNarrow: 0.93,
   /** The truck hands itself from the tilt pose to the path over this window. */
   blendIn: 0.2,
   /** The route headline fades in as the truck exits the bend. */
@@ -1350,6 +1368,15 @@ export const SEA = {
   driveIn: [0, 0.14],
   /** How far the truck drives in phase A, viewport fractions. */
   driveD: 0.24,
+  /**
+   * The same drive, upright — and only a nudge. Landscape pans the ship's
+   * plate to wherever the container hangs (handoffY); a phone's plate meets
+   * the viewport exactly on the short axis and cannot pan vertically at
+   * all, so there the CONTAINER is brought to the slot instead: the run's
+   * follow line is solved so that this short roll, less the curtain's head
+   * start, lands the box on the slot to the pixel.
+   */
+  driveDNarrow: 0.012,
   /** The screen line the container is pinned on through the sweep —
       measured off the live rig, not estimated. */
   handoffY: 0.86,

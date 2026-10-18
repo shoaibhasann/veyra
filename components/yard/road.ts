@@ -146,7 +146,7 @@ export const ROAD_WIDTH = 0.46;
 export const LANE_LINE_F = 0.275;
 const LANE_LINE_OFF = ROAD_WIDTH * LANE_LINE_F;
 
-const BEND_R = 1.3;
+export const BEND_R = 1.3;
 /** Drawn arms — long enough to leave frame at any aspect we render at. */
 const DRAW = { west: 9, east: 9, south: 9 };
 /** Travelled arms — trimmed so the run is mostly on camera, not off it. */

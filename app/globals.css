@@ -196,6 +196,10 @@ html.lenis {
   @media (max-aspect-ratio: 1 / 1) {
     :root {
       --plane-w: 113vw;
+      /* The overhead rig at 53vw was a 200px truck on a 375px screen, with
+         the band it drives sized down to match — a thin strip in a frame of
+         blank paper. Upright, the truck takes the width the frame has. */
+      --top-w: 80vw;
     }
   }
 

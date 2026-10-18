@@ -33,8 +33,8 @@ export default function TruckTopRig({ wrapRef, tractorRef }: TruckTopRigProps) {
   return (
     <div
       ref={wrapRef}
-      className="absolute top-0 left-0 w-[53vw] will-change-transform"
-      style={{ transformOrigin: TOP_ORIGIN }}
+      className="absolute top-0 left-0 will-change-transform"
+      style={{ width: "var(--top-w, 53vw)", transformOrigin: TOP_ORIGIN }}
       aria-hidden="true"
     >
       {/* The filter sits on the composite, so the light halo and the cast
