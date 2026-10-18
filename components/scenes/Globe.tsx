@@ -600,7 +600,11 @@ function buildScene(
     viewWidth = width;
     viewHeight = height;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Phones carry 3x screens and a fraction of the fill rate, so the planet
+    // is drawn at 1.5x there and 2x elsewhere — the dot field is the same
+    // field either way, it is only resolved less finely.
+    const dprCap = window.matchMedia("(max-width: 768px)").matches ? 1.5 : 2;
+    const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
     renderer.setPixelRatio(dpr);
     renderer.setSize(width, height, false);
 
@@ -848,8 +852,12 @@ export default function Globe({ className }: { className?: string }) {
     };
 
     const decide = () => {
-      const allowed =
-        !reduceMotion.matches && !small.matches && supportsWebGL2();
+      // A PHONE GETS THE PLANET TOO. Small screens used to fall back to the
+      // flat plate, which is the one device where the globe is the whole
+      // first impression — and a modern phone runs this comfortably; what it
+      // cannot afford is the desktop's pixel ratio, so that is what gives
+      // (below). Reduced motion and a missing WebGL2 still get the plate.
+      const allowed = !reduceMotion.matches && supportsWebGL2();
       setMode(allowed ? "webgl" : "static");
     };
 

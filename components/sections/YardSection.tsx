@@ -45,7 +45,10 @@ import {
   BOOM_EXT_AXIS,
   RUN,
   TILT,
+  TILT_BAND,
   TILT_CUT,
+  LANE_DASH,
+  tiltBand,
   TOP_BODY_CX,
   TOP_BODY_CY,
   TOP_BODY_W,
@@ -101,7 +104,7 @@ import {
   truckPose,
 } from "@/components/yard/geometry";
 import { prepareWipe, wipeAccent, wipeGroup } from "@/lib/wipe";
-import { JUNCTION, ROAD_WIDTH, roadUnitPx, sampleTravel } from "@/components/yard/road";
+import { JUNCTION, LANE_LINE_F, ROAD_WIDTH, roadUnitPx, sampleTravel } from "@/components/yard/road";
 import { useWheelRotation } from "@/hooks/useWheelRotation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { revertSplit, scrambleText, splitLines } from "@/lib/scramble";
@@ -180,6 +183,19 @@ interface Metrics {
   worldH: number;
   stageW: number;
   stageH: number;
+  /** Where the ground sits in the pinned viewport — lower on a phone, so the
+      rig keeps the top of the screen and the chapter's words keep the rest.
+      Measured, not guessed at in two places: the world's own `top`, the
+      camera's origin and the camera's lift all read THIS. */
+  ground: number;
+  /** The overhead band: centre and height as viewport fractions. The band's
+      lane dashes, its two rows and the truck that drives it all follow. */
+  bandCentre: number;
+  bandH: number;
+  /** Taller than it is wide — the phone pose, measured once per layout. */
+  portrait: boolean;
+  /** The measure the cloud fleet is sized against. */
+  cloudBase: number;
   /** Content widths of the follow's roadside layers, for their travel maps. */
   stripW: number;
   ghostW: number;
@@ -257,6 +273,11 @@ export default function YardSection() {
     worldH: 0,
     stageW: 0,
     stageH: 0,
+    ground: STAGE.ground,
+    bandCentre: TILT_BAND.wide.centre,
+    bandH: TILT_BAND.wide.height,
+    portrait: false,
+    cloudBase: 0,
     stripW: 0,
     ghostW: 0,
   });
@@ -340,8 +361,85 @@ export default function YardSection() {
     const world = worldRef.current;
     if (!section || !stage || !world) return;
 
+    /** A phone (or any window taller than it is wide) gets the portrait rig. */
+    const portrait = window.matchMedia("(max-aspect-ratio: 1 / 1)");
+
     const measure = () => {
       const m = metricsRef.current;
+      m.portrait = portrait.matches;
+      m.ground = m.portrait ? STAGE.groundNarrow : STAGE.ground;
+      const band = tiltBand(portrait.matches);
+      m.bandCentre = band.centre;
+      m.bandH = band.height;
+      // THE BAND AND ITS ROAD, from one number. The night strip is one
+      // carriageway wide, so the dashes are the network's own stroke scaled
+      // by that width — authored once here rather than twice in the markup.
+      const top = m.bandCentre - m.bandH / 2;
+      const bandEl = topBandRef.current;
+      if (bandEl) {
+        bandEl.style.top = `${(top * 100).toFixed(3)}%`;
+        bandEl.style.bottom = `${((1 - top - m.bandH) * 100).toFixed(3)}%`;
+      }
+      // THE SEA, IN ONE COLUMN. Four cards at the four corners is a landscape
+      // idea; on a phone they collided with each other, with the headline and
+      // with the ship. In portrait they take the middle of the frame one at a
+      // time, full measure and centred — the layout is written here so the
+      // scene's markup keeps a single authored pose.
+      for (let i = 0; i < SHIP_CARDS.length; i++) {
+        const el = shipCardRefs[i].current;
+        if (!el) continue;
+        const pos = SHIP_CARDS[i].pos;
+        const accent = el.querySelector<HTMLElement>("[data-strip-accent], [data-card-accent]");
+        if (portrait.matches) {
+          el.style.left = "8%";
+          el.style.right = "8%";
+          el.style.width = "auto";
+          el.style.maxWidth = "none";
+          el.style.top = "54%";
+          el.style.textAlign = "center";
+          if (accent) accent.style.margin = "0 auto";
+        } else {
+          el.style.left = pos.left;
+          el.style.right = pos.right;
+          el.style.width = "";
+          el.style.maxWidth = "";
+          el.style.top = pos.top;
+          el.style.textAlign = pos.align;
+          if (accent) accent.style.margin = pos.align === "right" ? "0 0 0 auto" : "0";
+        }
+      }
+
+      // THE FLEET, SIZED TO THE FRAME. A puff's job is to help close the
+      // picture, and a phone's picture is tall: seven sprites measured off a
+      // 375px width left ocean showing between every one of them. Taking the
+      // larger of the width and a share of the height leaves a landscape
+      // window exactly as it was and gives portrait clouds that can meet.
+      m.cloudBase = Math.max(m.stageW, m.stageH * 1.15);
+      for (let i = 0; i < AIR_CLOUDS.length; i++) {
+        const el = airCloudRefs[i].current;
+        if (el) el.style.width = `${(AIR_CLOUDS[i].w * m.cloudBase).toFixed(1)}px`;
+      }
+
+      const lanes = lanesRef.current;
+      if (lanes) {
+        const unit = (m.bandH * stage.clientHeight) / ROAD_WIDTH;
+        const rows = [...lanes.children] as HTMLElement[];
+        const offs = [-LANE_LINE_F, LANE_LINE_F];
+        rows.forEach((row, i) => {
+          row.style.top = `${((m.bandCentre + offs[i] * m.bandH) * 100).toFixed(3)}%`;
+          row.style.gap = `${(unit * LANE_DASH.gap).toFixed(1)}px`;
+          row.style.left = `${(-unit * (LANE_DASH.length + LANE_DASH.gap)).toFixed(1)}px`;
+          for (const dash of [...row.children] as HTMLElement[]) {
+            dash.style.height = `${(unit * LANE_DASH.thickness).toFixed(2)}px`;
+            dash.style.width = `${(unit * LANE_DASH.length).toFixed(1)}px`;
+          }
+        });
+      }
+      // The world's seat and the camera's hinge are the same line, written
+      // from the same number — a second copy in the markup would drift.
+      world.style.top = `${(m.ground * 100).toFixed(2)}%`;
+      const side = sideLayerRef.current;
+      if (side) side.style.transformOrigin = `50% ${(m.ground * 100).toFixed(2)}%`;
       m.worldW = world.clientWidth;
       m.worldH = world.clientHeight;
       m.stageW = stage.clientWidth;
@@ -500,7 +598,7 @@ export default function YardSection() {
         const dx =
           zoom * (DRIVE.truckX * m.stageW - OX - s * (cxPx - OX)) +
           tiltExitE(t) * TILT_CUT.exitDist * m.stageW;
-        const dy = (camGroundFrac(p) - STAGE.ground) * m.stageH;
+        const dy = (camGroundFrac(p, m.ground) - m.ground) * m.stageH;
         cam = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${s.toFixed(4)})`;
       }
       write(sideLayerRef.current, "transform", "cam", cam);
@@ -646,7 +744,7 @@ export default function YardSection() {
       if (rT > 0) {
         const bl = runBlendE(rT);
         const X = TILT.topX * m.stageW + (px - TILT.topX * m.stageW) * bl;
-        let Y = TILT.topY * m.stageH + (py - TILT.topY * m.stageH) * bl;
+        let Y = m.bandCentre * m.stageH + (py - m.bandCentre * m.stageH) * bl;
         if (sT > 0) {
           const liftA = seaCurtainE(SEA.driveIn[1]) * 1.05 * m.stageH;
           Y +=
@@ -662,7 +760,7 @@ export default function YardSection() {
       } else if (t > 0) {
         topPose =
           `translate(calc(${(TILT.topX * m.stageW).toFixed(1)}px - ${(TOP_BODY_CX * 100).toFixed(4)}%), ` +
-          `calc(${(TILT.topY * m.stageH).toFixed(1)}px - ${(TOP_BODY_CY * 100).toFixed(4)}%))`;
+          `calc(${(m.bandCentre * m.stageH).toFixed(1)}px - ${(TOP_BODY_CY * 100).toFixed(4)}%))`;
       }
       write(topWrapRef.current, "transform", "topPose", topPose);
 
@@ -784,7 +882,7 @@ export default function YardSection() {
           const inE = seaCardInE(sT, i);
           wipeGroup(el, inE);
           wipeAccent(el.querySelector<HTMLElement>("[data-card-accent]"), inE, "var(--color-paper)");
-          write(el, "opacity", `sc${i}o`, seaCardAlpha(sT, i).toFixed(3));
+          write(el, "opacity", `sc${i}o`, seaCardAlpha(sT, i, m.portrait).toFixed(3));
           write(
             el,
             "transform",
@@ -820,7 +918,7 @@ export default function YardSection() {
           if (!el) continue;
           const c = AIR_CLOUDS[i];
           const e = airCloudE(sT, i, AIR_CLOUDS.length);
-          const wPx = c.w * m.stageW;
+          const wPx = c.w * m.cloudBase;
           // From its wing to its OWN post — spread across the frame, the
           // centre corridor left open so the vessel keeps its window.
           const rest = c.cx * m.stageW - wPx / 2;
@@ -843,7 +941,7 @@ export default function YardSection() {
         // panel's x is a pure function of the freighter's.
         const u = airPlaneU(aT);
         const planeEl = airPlaneRef.current;
-        const planeW = planeEl ? planeEl.offsetWidth : 2.03 * m.stageH;
+        const planeW = planeEl ? planeEl.offsetWidth : Math.min(1.13 * m.stageW, 2.03 * m.stageH);
         // In from off-screen left, out to the right with only its tail left
         // in frame: the freighter leaves, the daylight it towed stays.
         const planeX = -planeW + u * (m.stageW + (1 - PLANE_EXIT) * planeW);
@@ -947,8 +1045,18 @@ export default function YardSection() {
         start: "top bottom",
         once: true,
         onEnter: () => {
+          // THE CUT THE FRAME DESERVES. A phone shows the sea plate at a
+          // fraction of a desktop's pixels and usually pays for it by the
+          // megabyte, so it gets a 1440-wide encode — 25MB instead of 68MB
+          // for the pair, from the same grade-matched masters. The source is
+          // chosen HERE rather than in the markup because `media` on a
+          // <source> is not honoured for video, and because by this point
+          // the layout is measured and the answer is known.
+          const small = metricsRef.current.portrait || window.innerWidth <= 768;
           for (const v of [shipLoopRef.current, shipAscentRef.current]) {
             if (!v || v.preload === "auto") continue;
+            const src = (small && v.dataset.srcSmall) || v.dataset.src;
+            if (src && v.getAttribute("src") !== src) v.setAttribute("src", src);
             v.preload = "auto";
             v.load();
           }
@@ -964,6 +1072,12 @@ export default function YardSection() {
         drive.kill();
       };
     }, section);
+
+    portrait.addEventListener("change", () => {
+      measure();
+      last.clear();
+      render();
+    });
 
     const observer = new ResizeObserver(() => {
       measure();
@@ -986,7 +1100,9 @@ export default function YardSection() {
       ctx.revert();
       progress.p = 0;
     };
-  }, [live]);
+    // The ref arrays are useMemo'd once, so naming them here is honest about
+    // what the rig reads without ever re-running it.
+  }, [live, airCloudRefs, cardRefs, shipCardRefs]);
 
   // Chapter hand-off. The headline and eyebrow are keyed, so React hands us a
   // pristine node and the destructive split never fights reconciliation.
@@ -1111,17 +1227,10 @@ export default function YardSection() {
               46.57svh long, 41.09svh apart, white at 0.88. The swap to the
               network changes nothing but who is drawing. */}
           <div ref={lanesRef} className="absolute inset-0 will-change-transform">
-            {TILT.rows.map((row) => (
-              <div
-                key={row}
-                className="absolute left-[-87.66svh] flex w-max -translate-y-1/2 gap-[41.09svh]"
-                style={{ top: pct(row) }}
-              >
-                {Array.from({ length: 6 }, (_, i) => (
-                  <span
-                    key={i}
-                    className="h-[3.01svh] w-[46.57svh] shrink-0 bg-white/[0.88]"
-                  />
+            {[0, 1].map((row) => (
+              <div key={row} className="absolute flex w-max -translate-y-1/2">
+                {Array.from({ length: 8 }, (_, i) => (
+                  <span key={i} className="shrink-0 bg-white/[0.88]" />
                 ))}
               </div>
             ))}

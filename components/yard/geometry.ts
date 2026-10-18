@@ -165,10 +165,22 @@ export const STAGE = {
    * edge. The whole working group must fit the picture, like the reference.
    */
   width: "min(124vw, 208svh)",
-  /** Narrow screens hold the frozen pose; pull back so the loaded rig fits. */
-  widthNarrow: "min(150vw, 208svh)",
+  /**
+   * PORTRAIT. A phone is narrow and tall, so the world is sized to the narrow
+   * measure — the whole working group has to be inside the picture, and at
+   * the old 150vw the stack and the spreader hung off the right edge where
+   * nobody could see the box being picked up. Capped on height too, so a
+   * short landscape phone does not get a world taller than its own screen.
+   */
+  widthNarrow: "min(120vw, 190svh)",
   /** Ground line, as a fraction of the pinned viewport's height. */
   ground: 0.77,
+  /**
+   * PORTRAIT ground line. A phone has height to spare and width to spare
+   * nothing, so the rig sits high and the chapter's words take the room
+   * underneath — at the landscape 0.77 the copy came up THROUGH the truck.
+   */
+  groundNarrow: 0.5,
 } as const;
 
 // ── Authored scale and depth ──────────────────────────────────────────────────
@@ -1038,8 +1050,8 @@ export const camScaleAt = (p: number) => 1 - (1 - DRIVE.scale) * driveZoom(p);
  * origin — one lerp, and SplitStage paints its seam from the same constant,
  * which is why the tyres stay on the join through the whole pull-back.
  */
-export function camGroundFrac(p: number): number {
-  return STAGE.ground + driveZoom(p) * (DRIVE.ground - STAGE.ground);
+export function camGroundFrac(p: number, ground: number = STAGE.ground): number {
+  return ground + driveZoom(p) * (DRIVE.ground - ground);
 }
 
 // ── Acts ──────────────────────────────────────────────────────────────────────
@@ -1100,15 +1112,29 @@ export const TILT = {
    */
   topX: 0.5,
   topY: 0.655,
-  /**
-   * Lane-dash rows, viewport fractions — SOLVED, not styled: the band's two
-   * rows sit exactly where the road's two lane guide lines land under the
-   * handoff camera (centre 0.655 ± LANE_LINE_F · bandHeight), so the swap to
-   * the SVG network changes nothing on screen. The truck drives the
-   * centreline between them, both here and on the network.
-   */
-  rows: [0.655 - 0.275 * 0.63, 0.655 + 0.275 * 0.63],
 } as const;
+
+/**
+ * THE BAND IS A CARRIAGEWAY. Its height is one ROAD_WIDTH of the network it
+ * hands over to, which is why every dash metric below is derived from it
+ * rather than authored: thickness, length and gap are the network's own
+ * stroke (0.022 units, dashed 0.34 / 0.30) measured in band heights, and the
+ * two lane rows sit at ±LANE_LINE_F of it. At the landscape band this
+ * reproduces the solved numbers exactly — 3.01svh thick, 46.57svh long,
+ * 41.09svh apart — and on a phone it simply follows the narrower band
+ * instead of painting a 500px-wide road under a 175px truck.
+ */
+export const TILT_BAND = {
+  wide: { centre: 0.655, height: 0.63 },
+  /** Portrait keeps the road in proportion to the truck that drives it. */
+  narrow: { centre: 0.46, height: 0.105 },
+} as const;
+
+export const tiltBand = (portrait: boolean) =>
+  portrait ? TILT_BAND.narrow : TILT_BAND.wide;
+
+/** The network's stroke, in road units — the band borrows it verbatim. */
+export const LANE_DASH = { thickness: 0.022, length: 0.34, gap: 0.3 } as const;
 
 /**
  * THE CUT, not a rotation. The old scene keeps the drive's ground line while
@@ -1425,9 +1451,22 @@ export const seaTextOutE = (t: number) => smoother(span(t, SEA.textOut[0], SEA.t
 /** Sea feature cards: same reveal grammar as the route cards. */
 export const seaCardInE = (t: number, i: number) =>
   smoother(span(t, SEA.cards[i], SEA.cards[i] + SEA.cardFade));
-/** In on its own mark, out with everything else — one exit, not four. */
-export function seaCardAlpha(t: number, i: number): number {
-  return seaCardInE(t, i) * (1 - seaTextOutE(t));
+/**
+ * In on its own mark, out with everything else — one exit, not four.
+ *
+ * `solo` is the PORTRAIT grammar: a phone has one column, so the cards cannot
+ * hold the four corners of the frame the way they do in landscape. They take
+ * the middle one at a time instead, each leaving as the next arrives.
+ */
+export function seaCardAlpha(t: number, i: number, solo = false): number {
+  const next = SEA.cards[i + 1];
+  // Sharing one spot means the hand-over has to be crisp: the outgoing card
+  // is gone by the time the next has arrived, or the two print over each
+  // other in the middle of the frame. In landscape they live at four
+  // different corners and can afford to overlap.
+  const handover =
+    solo && next !== undefined ? 1 - span(t, next - 0.02, next + 0.012) : 1;
+  return seaCardInE(t, i) * handover * (1 - seaTextOutE(t));
 }
 export const seaCardGlow = (t: number, i: number) =>
   seaCardInE(t, i) *

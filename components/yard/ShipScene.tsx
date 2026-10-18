@@ -245,7 +245,8 @@ export default function ShipScene({
             moment the sea act opens. */}
         <video
           ref={loopRef}
-          src="/assets/sea-loop.mp4"
+          data-src="/assets/sea-loop.mp4"
+          data-src-small="/assets/sea-loop-sm.mp4"
           muted
           loop
           playsInline
@@ -255,7 +256,8 @@ export default function ShipScene({
         />
         <video
           ref={ascentRef}
-          src="/assets/sea-ascent.mp4"
+          data-src="/assets/sea-ascent.mp4"
+          data-src-small="/assets/sea-ascent-sm.mp4"
           muted
           playsInline
           preload="none"
@@ -293,9 +295,14 @@ export default function ShipScene({
       {/* The display line over the scene. */}
       <div
         ref={typeRef}
-        className="absolute inset-x-0 top-[18%] px-6 text-center opacity-0 will-change-transform"
+        className="absolute inset-x-0 top-[23%] px-6 text-center opacity-0 will-change-transform md:top-[18%]"
       >
-        <p className="u-display text-[clamp(2.4rem,6.5vw,6.5rem)] leading-[0.95]">
+        {/* A phone reads this over the vessel with the cards underneath, so
+            the line has to be small enough to sit on two rows at 375px —
+            6.5vw floors at 38px there, which wrapped into the cards. It also
+            starts below the instruments, which share the top of a narrow
+            screen with it. */}
+        <p className="u-display text-[clamp(1.55rem,7.5vw,6.5rem)] leading-[0.95] md:text-[clamp(2.4rem,6.5vw,6.5rem)]">
           <span className="block">Every nautical mile,</span>
           <span className="block">accounted for.</span>
         </p>

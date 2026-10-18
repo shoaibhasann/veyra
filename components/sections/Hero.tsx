@@ -263,15 +263,18 @@ export default function Hero() {
           the box inside keeps its Tailwind centring translate untouched, so
           GSAP never has to decompose a pre-existing percentage transform. */}
       <div ref={globeFieldRef} aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[76%] top-[52%] h-[113vh] w-[113vh] -translate-x-1/2 -translate-y-1/2 opacity-40 md:opacity-100">
+        <div className="absolute left-[76%] top-[52%] h-[113vh] w-[113vh] -translate-x-1/2 -translate-y-1/2 opacity-[0.78] md:opacity-100">
           <Globe className="h-full w-full" />
         </div>
       </div>
 
-      {/* Mobile-only scrim so the copy stays legible over the centred sphere. */}
+      {/* Mobile-only scrim so the copy stays legible over the sphere. It used
+          to dim the whole hero because a phone got the flat plate and the
+          plate had no depth of its own; the planet does, so the scrim now
+          only weights the band the copy actually sits in. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#050505]/80 via-[#050505]/40 to-[#050505]/80 md:hidden"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/45 to-[#050505]/75 md:hidden"
       />
 
       {/* justify-start + a vh/px-floored top pad keeps the headline in the

@@ -109,9 +109,13 @@ html.lenis {
      of the same beats. This is the ONLY place the choice is made — YardSection
      asks the DOM whether its stage is displayed rather than restating the query
      in JavaScript, so the two can never disagree.
-     Pinning needs room in BOTH axes: below 769px, on portrait windows, or under
-     a reduced-motion preference, the twelve-viewport narrative is told as a
-     sequence instead. */
+     The rig runs on PHONES TOO. It used to need landscape and 769px, which
+     meant a phone got the static sequence — the one device where the whole
+     point of the thing, a story told by scrolling, is most at home. What it
+     actually needs is room along the axis the journey travels, and a phone
+     has plenty of that; the world is sized to the narrow measure and the
+     run turns to travel down the screen instead of across it. Only a
+     reduced-motion preference still gets the sequence. */
   .yard-live {
     display: none;
   }
@@ -131,7 +135,7 @@ html.lenis {
     margin-top: 0;
   }
 
-  @media (min-width: 769px) and (min-aspect-ratio: 1 / 1) and (prefers-reduced-motion: no-preference) {
+  @media (prefers-reduced-motion: no-preference) {
     .yard-live {
       display: block;
     }
@@ -182,6 +186,25 @@ html.lenis {
     --arc-cx: 50%;
     --arc-cy: 211svh;
     --arc-paper: #faf7f7;
+  }
+
+  /* PORTRAIT ARCS. Both domes are drawn with a 95svh semi-axis, and the
+     radial gradient is concentric with it — so on a phone, where svh is the
+     LONG axis, the colour ran across most of a screen before the section
+     under it began. Halving the semi-axis tightens that reach; the centre
+     moves by the same amount in the same direction, which keeps each arc's
+     apex exactly where it was (14svh into the intro's head, 116svh under
+     the outro's) and changes only how far the wash spreads from it. */
+  @media (max-aspect-ratio: 1 / 1) {
+    .intro-cover {
+      --arc-ry: 50svh;
+      --arc-cy: -36svh;
+    }
+
+    .outro-cover {
+      --arc-ry: 50svh;
+      --arc-cy: 166svh;
+    }
   }
 
   /* Card face. The mask cuts the ellipse interior OUT (everything above the

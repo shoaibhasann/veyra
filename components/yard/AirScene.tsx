@@ -71,6 +71,9 @@ export default function AirScene({ rootRef, cloudRefs, panelRef, planeRef }: Air
           key={`${c.src}-${i}`}
           ref={cloudRefs[i]}
           className="absolute top-0 left-0 opacity-0 will-change-transform"
+          /* First-paint width only — the rig re-measures it against the
+             frame it actually has to close, which is a different number on
+             a phone held upright. */
           style={{ width: `${(c.w * 100).toFixed(1)}vw` }}
         >
           <img
@@ -103,7 +106,14 @@ export default function AirScene({ rootRef, cloudRefs, panelRef, planeRef }: Air
       <div
         ref={planeRef}
         className="absolute top-1/2 left-0 will-change-transform"
-        style={{ width: "203svh", transform: "translate3d(-250vw, -50%, 0)" }}
+        /* THE CROSSING IS MEASURED ACROSS THE FRAME, so the freighter is
+           sized in viewport WIDTHS. At 203svh it was authored against the
+           short axis of a landscape window; turn the screen upright and svh
+           becomes the long one, which put a 1600px aircraft on a 375px phone
+           — a wing and nothing else. 113vw is the same aircraft a landscape
+           window always showed, and the seam solve reads its live width, so
+           the tow is unaffected either way. */
+        style={{ width: "min(113vw, 203svh)", transform: "translate3d(-250vw, -50%, 0)" }}
       >
         <img
           src="/assets/plane-top.webp"
