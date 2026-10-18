@@ -397,6 +397,9 @@ export default function YardSection() {
           el.style.maxWidth = "none";
           el.style.top = "54%";
           el.style.textAlign = "center";
+          // Centred means ON the vessel's brightest water rather than beside
+          // it, so the words carry their own shadow to stay readable there.
+          el.style.textShadow = "0 1px 14px rgba(6, 18, 38, 0.62)";
           if (accent) accent.style.margin = "0 auto";
         } else {
           el.style.left = pos.left;
@@ -405,6 +408,7 @@ export default function YardSection() {
           el.style.maxWidth = "";
           el.style.top = pos.top;
           el.style.textAlign = pos.align;
+          el.style.textShadow = "";
           if (accent) accent.style.margin = pos.align === "right" ? "0 0 0 auto" : "0";
         }
       }

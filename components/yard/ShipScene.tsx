@@ -295,7 +295,7 @@ export default function ShipScene({
       {/* The display line over the scene. */}
       <div
         ref={typeRef}
-        className="absolute inset-x-0 top-[23%] px-6 text-center opacity-0 will-change-transform md:top-[18%]"
+        className="absolute inset-x-0 top-[27%] px-6 text-center opacity-0 will-change-transform md:top-[18%]"
       >
         {/* A phone reads this over the vessel with the cards underneath, so
             the line has to be small enough to sit on two rows at 375px —
