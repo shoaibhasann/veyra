@@ -59,7 +59,7 @@ function DotIcon({ rows }: { rows: readonly string[] }) {
   return (
     <svg
       viewBox={`0 0 ${cols} ${rows.length}`}
-      className="h-11 w-auto"
+      className="h-9 w-auto sm:h-11"
       aria-hidden="true"
       focusable="false"
     >
@@ -104,7 +104,7 @@ export default function RouteContent({ leftRef, cardRefs }: RouteContentProps) {
           <span className="block text-ink/35">Reliability,</span>
           <span className="block">routed.</span>
         </p>
-        <p className="mt-6 max-w-[38ch] text-sm leading-relaxed text-ink/65 sm:text-base">
+        <p className="mt-5 max-w-[38ch] text-[0.8125rem] leading-[1.5] text-ink/65 sm:mt-6 sm:text-base sm:leading-relaxed">
           Every service under one roof and one accountable team — so the lane
           moves the way your business demands: predictably, transparently,
           without excuses.
@@ -121,11 +121,13 @@ export default function RouteContent({ leftRef, cardRefs }: RouteContentProps) {
           <span data-card-accent className="block text-ink">
             <DotIcon rows={card.icon} />
           </span>
-          <h3 className="font-display mt-5 text-xl leading-tight font-bold tracking-tight uppercase sm:text-2xl">
+          <h3 className="font-display mt-4 text-lg leading-tight font-bold tracking-tight uppercase sm:mt-5 sm:text-2xl">
             <span className="block">{card.title[0]}</span>
             <span className="block">{card.title[1]}</span>
           </h3>
-          <p className="mt-4 text-sm leading-relaxed text-ink/65 sm:text-base">{card.copy}</p>
+          <p className="mt-3 text-[0.8125rem] leading-[1.5] text-ink/65 sm:mt-4 sm:text-base sm:leading-relaxed">
+            {card.copy}
+          </p>
         </div>
       ))}
     </div>

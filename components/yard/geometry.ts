@@ -1280,6 +1280,16 @@ export const RUN = {
   shrinkOut: 0.45,
   /** How far right the junction is parked at the handoff, stage widths. */
   junctionOff: 1.6,
+  /**
+   * PORTRAIT PARKS THE JUNCTION OFF-CENTRE. Landscape has white field on
+   * BOTH sides of the south arm — headline left, cards right. A phone does
+   * not: the same arm splits 375px into a 145px field and a 160px one, and
+   * the copy written for those columns breaks mid-word and runs under the
+   * tarmac. So the sweep simply stops short of centre, leaving one honest
+   * column the full copy can live in. It rides the sweep's own easing, so
+   * the handoff frame — where the west arm IS the band — is untouched.
+   */
+  narrowPark: 0.24,
   /** The truck hands itself from the tilt pose to the path over this window. */
   blendIn: 0.2,
   /** The route headline fades in as the truck exits the bend. */

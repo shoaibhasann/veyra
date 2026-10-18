@@ -292,6 +292,18 @@ export default function ShipScene({
         </div>
       </div>
 
+      {/* THE READING LIGHT, phones only. Landscape shows this act inside
+          open water, where white type and the HUD sit on deep blue and
+          need nothing. A portrait viewport crops the same frame to a
+          quarter of its width — all vessel and wake — so the top of the
+          screen becomes white foam and lit containers under the exact
+          type that has to stay legible. One long ramp off the scene's own
+          blue restores the backing the letterboxed plate used to give by
+          accident, without the hard edge it had. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-[#06182f]/85 via-[#06182f]/48 to-transparent md:hidden"
+      />
+
       {/* The display line over the scene. */}
       <div
         ref={typeRef}

@@ -413,6 +413,56 @@ export default function YardSection() {
         }
       }
 
+      // THE SOUTH RUN, IN ONE COLUMN. Landscape has white field on BOTH
+      // sides of the arm, which is why the headline reads left of it and
+      // the cards swap right. A phone has one field — the one the junction
+      // vacates by parking at RUN.narrowPark — so the act stacks into it in
+      // reading order: headline, its paragraph, then the swapping card
+      // directly under the measure it just read. Both edges are solved off
+      // the SAME road unit the carriageway is drawn with, so the type
+      // cannot touch tarmac at any viewport, and the card's top is read
+      // back off the laid-out paragraph rather than guessed.
+      const routeLeft = routeLeftRef.current;
+      if (portrait.matches) {
+        const armHalf = (ROAD_WIDTH * roadUnitPx(m.stageW, m.stageH)) / 2;
+        const gut = 0.043 * m.stageW;
+        const colW = (JUNCTION.x + RUN.narrowPark) * m.stageW - armHalf - 2 * gut;
+        const headTop = JUNCTION.y * m.stageH + armHalf + 0.024 * m.stageH;
+        const leftPc = `${((gut / m.stageW) * 100).toFixed(3)}%`;
+        const widthPc = `${((colW / m.stageW) * 100).toFixed(3)}%`;
+        if (routeLeft) {
+          routeLeft.style.left = leftPc;
+          routeLeft.style.width = widthPc;
+          routeLeft.style.top = `${((headTop / m.stageH) * 100).toFixed(3)}%`;
+        }
+        // Reading the laid-out height back costs one reflow inside a
+        // function that is already measuring, and buys a card that can
+        // never land on the paragraph however the copy rewraps.
+        const cardTop = headTop + (routeLeft?.offsetHeight ?? 0) + 0.024 * m.stageH;
+        for (const r of cardRefs) {
+          const el = r.current;
+          if (!el) continue;
+          el.style.left = leftPc;
+          el.style.width = widthPc;
+          el.style.maxWidth = "none";
+          el.style.top = `${((cardTop / m.stageH) * 100).toFixed(3)}%`;
+        }
+      } else {
+        if (routeLeft) {
+          routeLeft.style.left = "";
+          routeLeft.style.width = "";
+          routeLeft.style.top = "";
+        }
+        for (const r of cardRefs) {
+          const el = r.current;
+          if (!el) continue;
+          el.style.left = "";
+          el.style.width = "";
+          el.style.maxWidth = "";
+          el.style.top = "";
+        }
+      }
+
       // THE FLEET, SIZED TO THE FRAME. A puff's job is to help close the
       // picture, and a phone's picture is tall: seven sprites measured off a
       // 375px width left ocean showing between every one of them. Taking the
@@ -686,7 +736,8 @@ export default function YardSection() {
       const jy = JUNCTION.y * m.stageH;
       const K0 = ((TILT.bottom - TILT.seamEnd) * m.stageH) / (ROAD_WIDTH * su);
       const K = K0 + (1 - K0) * shr;
-      const rtx = RUN.junctionOff * m.stageW * (1 - shr);
+      const rtx =
+        (RUN.junctionOff * (1 - shr) + (m.portrait ? RUN.narrowPark * shr : 0)) * m.stageW;
       const rty =
         ((TILT.seamEnd + TILT.bottom) / 2 - JUNCTION.y) * m.stageH * (1 - shr);
       // The truck's raw pose under that camera comes first: once it descends
@@ -803,7 +854,16 @@ export default function YardSection() {
         const truckContW = TOP_DECK.h * (su / TOP_BODY_W) * (1536 / 2720);
         const plateW = Math.max(m.stageW, m.stageH * (SHIP_FRAME.w / SHIP_FRAME.h));
         const plateH = plateW * (SHIP_FRAME.h / SHIP_FRAME.w);
-        const zBase = truckContW / (SHIP_SLOT.w * plateW);
+        // PORTRAIT HAS NO ZOOM TO SPEND. The sync above is a landscape
+        // idea: on a phone the cover-fit plate is ~3.8x wider than the
+        // viewport, so matching the truck container's on-screen width
+        // means riding the camera BELOW cover-fit — measured 0.53, which
+        // walks the plate's own blue into frame above and below the
+        // footage for the entire act. There is nothing to solve here:
+        // the shot is the baked ascent at exact cover, and the curtain
+        // alone carries the handoff, as it does for every other act on a
+        // phone. zBase 1 makes the camera an identity for all of sT.
+        const zBase = m.portrait ? 1 : truckContW / (SHIP_SLOT.w * plateW);
         // ONE SHOT, ONE CAMERA. The CSS zoom only rides zBase down to
         // exactly cover-fit — its edges can never enter frame — and every
         // metre of altitude past that is BAKED into the footage: the
@@ -840,9 +900,20 @@ export default function YardSection() {
         // mark the pinned container hangs on — both axes — easing home to
         // the plate's natural centre before the ascent leaves the deck.
         const panE = seaPanE(sT);
-        const panX = -panE * zoomS * (SHIP_SLOT.x - 0.5) * plateW;
-        const panY =
-          panE * (SEA.handoffY * m.stageH - 0.5 * m.stageH - zoomS * (SHIP_SLOT.y - 0.5) * plateH);
+        // Portrait keeps the X half of that sync and drops the Y half. X,
+        // because the run act parks its junction RUN.narrowPark to the
+        // right: the container hangs pinned on screen through the curtain,
+        // so the slot has to meet the truck where the truck actually is —
+        // the plate is 1443px wide inside a 375px window, which is slack
+        // enough to spend. Y, because the same plate meets the viewport
+        // EXACTLY on the short axis: there is no vertical slack at all, and
+        // any offset is the plate's own blue showing above or below.
+        const panX = m.portrait
+          ? panE * (RUN.narrowPark * m.stageW - (SHIP_SLOT.x - 0.5) * plateW)
+          : -panE * zoomS * (SHIP_SLOT.x - 0.5) * plateW;
+        const panY = m.portrait
+          ? 0
+          : panE * (SEA.handoffY * m.stageH - 0.5 * m.stageH - zoomS * (SHIP_SLOT.y - 0.5) * plateH);
         write(
           shipWrapRef.current,
           "transform",
