@@ -945,7 +945,11 @@ export default function YardSection() {
         // panel's x is a pure function of the freighter's.
         const u = airPlaneU(aT);
         const planeEl = airPlaneRef.current;
-        const planeW = planeEl ? planeEl.offsetWidth : Math.min(1.13 * m.stageW, 2.03 * m.stageH);
+        const planeW = planeEl
+          ? planeEl.offsetWidth
+          : m.portrait
+            ? 1.13 * m.stageW
+            : 2.03 * m.stageH;
         // In from off-screen left, out to the right with only its tail left
         // in frame: the freighter leaves, the daylight it towed stays.
         const planeX = -planeW + u * (m.stageW + (1 - PLANE_EXIT) * planeW);

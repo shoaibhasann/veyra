@@ -110,10 +110,12 @@ export default function AirScene({ rootRef, cloudRefs, panelRef, planeRef }: Air
            sized in viewport WIDTHS. At 203svh it was authored against the
            short axis of a landscape window; turn the screen upright and svh
            becomes the long one, which put a 1600px aircraft on a 375px phone
-           — a wing and nothing else. 113vw is the same aircraft a landscape
-           window always showed, and the seam solve reads its live width, so
-           the tow is unaffected either way. */
-        style={{ width: "min(113vw, 203svh)", transform: "translate3d(-250vw, -50%, 0)" }}
+           — a wing and nothing else. The portrait width comes from
+           --plane-w (globals.css), so a landscape window keeps the exact
+           203svh aircraft it always had and only an upright screen measures
+           the crossing across its own frame. The seam solve reads the live
+           width either way, so the tow is unaffected. */
+        style={{ width: "var(--plane-w, 203svh)", transform: "translate3d(-250vw, -50%, 0)" }}
       >
         <img
           src="/assets/plane-top.webp"

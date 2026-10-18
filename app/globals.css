@@ -188,6 +188,17 @@ html.lenis {
     --arc-paper: #faf7f7;
   }
 
+  /* THE CROSSING, ON AN UPRIGHT SCREEN. The freighter is authored at 203svh
+     — the short axis of a landscape window. Turn the screen upright and svh
+     becomes the LONG one, which put a 1600px aircraft on a 375px phone: a
+     wing, and nothing else. Portrait measures it across the frame instead;
+     landscape is left exactly as it was. */
+  @media (max-aspect-ratio: 1 / 1) {
+    :root {
+      --plane-w: 113vw;
+    }
+  }
+
   /* PORTRAIT ARCS. Both domes are drawn with a 95svh semi-axis, and the
      radial gradient is concentric with it — so on a phone, where svh is the
      LONG axis, the colour ran across most of a screen before the section
