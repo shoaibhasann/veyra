@@ -1198,21 +1198,43 @@ const tiltMorphE = (t: number) => smoother(span(t, TILT.morphIn, TILT.morphOut))
  * the frame's centre between the side truck's centre and the overhead mark,
  * and scales its content between the two rigs' on-screen lengths.
  */
+/**
+ * PHONES DECODE A FRACTION. Every yard sprite is a 2720px canvas (wheels and
+ * doors ~2000px), and a browser keeps each one DECODED at full size — 219MB
+ * of bitmaps for the yard alone, to draw a 28px wheel and a 130px box. On a
+ * phone that overruns the decoded-image cache: sprites are evicted mid-
+ * scroll, and an async-decoded one is simply not drawn that frame (the VEYRA
+ * box vanished off its trailer while its CSS hairline stayed). A portrait
+ * phone therefore picks a cut sized to what it shows — 1024px for the
+ * machines, 384px for wheels and doors, each at 3x its largest on-screen
+ * width — while every other window is told the sprite is drawn at its full
+ * width, so it keeps exactly the image it always had.
+ */
+const PHONE_MQ = "(max-aspect-ratio: 1/1) and (max-width: 600px)";
+const phoneCut = (src: string, fullW: number, smW: number, cssW: number) => ({
+  srcSet: `${src.replace(/\.webp$/, "-sm.webp")} ${smW}w, ${src} ${fullW}w`,
+  sizes: `${PHONE_MQ} ${cssW}px, ${fullW}px`,
+});
+/** The machines: largest on a phone is the 80vw overhead rig, ~330px. */
+const cut = (src: string, fullW = 2720) => ({ src, ...phoneCut(src, fullW, 1024, 340) });
+/** Wheels and doors: never wider than ~50px on a phone. */
+const cutSmall = (src: string, fullW: number) => ({ src, ...phoneCut(src, fullW, 384, 120) });
+
 export const LADDER = [
   {
-    src: "/assets/truck-a20-cut.webp",
+    ...cut("/assets/truck-a20-cut.webp"),
     box: { x: 0.072794, y: 0.276693, w: 0.85625, h: 0.386719 },
     in: 0.36,
     out: 0.58,
   },
   {
-    src: "/assets/truck-a45-cut.webp",
+    ...cut("/assets/truck-a45-cut.webp"),
     box: { x: 0.058824, y: 0.189453, w: 0.883824, h: 0.611979 },
     in: 0.5,
     out: 0.72,
   },
   {
-    src: "/assets/truck-a70-cut.webp",
+    ...cut("/assets/truck-a70-cut.webp"),
     box: { x: 0.057353, y: 0.294271, w: 0.883824, h: 0.421224 },
     in: 0.64,
     out: 0.86,
@@ -1636,30 +1658,30 @@ export const craneRolledUnits = (p: number) => cranePose(p).x;
 // ── Asset descriptors ─────────────────────────────────────────────────────────
 
 export const SPRITE = {
-  craneBody: { src: "/assets/crane-body-cut.webp", w: CRANE_BODY.w, h: CRANE_BODY.h },
-  craneBoom: { src: "/assets/crane-boom-cut.webp", w: CRANE_BOOM.w, h: CRANE_BOOM.h },
+  craneBody: { ...cut("/assets/crane-body-cut.webp"), w: CRANE_BODY.w, h: CRANE_BODY.h },
+  craneBoom: { ...cut("/assets/crane-boom-cut.webp"), w: CRANE_BOOM.w, h: CRANE_BOOM.h },
   /** Outer barrel + pivot plate only — the static sleeve the boom slides from. */
-  boomSleeve: { src: "/assets/boom-sleeve-cut.webp", w: CRANE_BOOM.w, h: CRANE_BOOM.h },
-  craneWheel: { src: "/assets/crane-wheel-cut.webp", w: CRANE_WHEEL_SRC.w, h: CRANE_WHEEL_SRC.h },
-  spreader: { src: "/assets/spreader-cut.webp", w: SPREADER_SRC.w, h: SPREADER_SRC.h },
-  truck: { src: "/assets/truck-empty-cut.webp", w: TRUCK_EMPTY.w, h: TRUCK_EMPTY.h },
-  truckTop: { src: "/assets/truck-empty-top-cut.webp", w: TRUCK_TOP_SRC.w, h: TRUCK_TOP_SRC.h },
+  boomSleeve: { ...cut("/assets/boom-sleeve-cut.webp"), w: CRANE_BOOM.w, h: CRANE_BOOM.h },
+  craneWheel: { ...cutSmall("/assets/crane-wheel-cut.webp", 2048), w: CRANE_WHEEL_SRC.w, h: CRANE_WHEEL_SRC.h },
+  spreader: { ...cut("/assets/spreader-cut.webp"), w: SPREADER_SRC.w, h: SPREADER_SRC.h },
+  truck: { ...cut("/assets/truck-empty-cut.webp"), w: TRUCK_EMPTY.w, h: TRUCK_EMPTY.h },
+  truckTop: { ...cut("/assets/truck-empty-top-cut.webp"), w: TRUCK_TOP_SRC.w, h: TRUCK_TOP_SRC.h },
   containerTop: {
-    src: "/assets/container-top-cut.webp",
+    ...cut("/assets/container-top-cut.webp", 2688),
     w: CONTAINER_TOP_SRC.w,
     h: CONTAINER_TOP_SRC.h,
     box: CONTAINER_TOP_SRC.contentBox,
   },
-  wheel: { src: "/assets/wheel-cut.webp", w: WHEEL.w, h: WHEEL.h },
-  box: { src: "/assets/container-veyra-cut.webp", w: BOX_SRC.w, h: BOX_SRC.h, box: BOX_SRC.contentBox },
+  wheel: { ...cutSmall("/assets/wheel-cut.webp", 2048), w: WHEEL.w, h: WHEEL.h },
+  box: { ...cut("/assets/container-veyra-cut.webp"), w: BOX_SRC.w, h: BOX_SRC.h, box: BOX_SRC.contentBox },
   doorBlue: {
-    src: "/assets/door-blue-cut.webp",
+    ...cutSmall("/assets/door-blue-cut.webp", 1792),
     w: DOOR_BLUE_SRC.w,
     h: DOOR_BLUE_SRC.h,
     box: DOOR_BLUE_SRC.contentBox,
   },
   doorOrange: {
-    src: "/assets/door-orange-cut.webp",
+    ...cutSmall("/assets/door-orange-cut.webp", 1760),
     w: DOOR_ORANGE_SRC.w,
     h: DOOR_ORANGE_SRC.h,
     box: DOOR_ORANGE_SRC.contentBox,

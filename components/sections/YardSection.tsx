@@ -208,6 +208,9 @@ interface Metrics {
   topW: number;
   /** Taller than it is wide — the phone pose, measured once per layout. */
   portrait: boolean;
+  /** Portrait only: the chapter's copy fits UNDER the rig for the whole
+      act, rather than taking the desktop's brief window over it. */
+  earlyCopy: boolean;
   /** The measure the cloud fleet is sized against. */
   cloudBase: number;
   /** Content widths of the follow's roadside layers, for their travel maps. */
@@ -292,6 +295,7 @@ export default function YardSection() {
     bandH: TILT_BAND.wide.height,
     topW: 0,
     portrait: false,
+    earlyCopy: false,
     cloudBase: 0,
     stripW: 0,
     ghostW: 0,
@@ -389,6 +393,38 @@ export default function YardSection() {
       m.stageW = stage.clientWidth;
       m.stageH = stage.clientHeight;
       m.ground = m.portrait ? STAGE.groundNarrow : STAGE.ground;
+      // THE WORDS AND THE RIG, FITTED. A phone gives the chapter's copy its
+      // own room under the rig — when the screen is tall enough to have one.
+      // Measured, not assumed: the rig's envelope is the world box (the
+      // raised boom clears its top by ~2% of the world's width, the shadow
+      // its ground line by the same), and the room is what the readout above
+      // and the bottom-anchored copy band below leave free. Offsets, not
+      // client rects, so the copy's own reveal transforms never skew it.
+      // When both fit, the rig is centred in that room and the copy reads
+      // under it from the moment the yard pins. When they cannot — a short
+      // window, a docked pane — the rig keeps clear of the readout and the
+      // copy falls back to the desktop's brief window.
+      m.earlyCopy = false;
+      const hudRow = hudRef.current?.firstElementChild as HTMLElement | null;
+      const copyBand = copyWrapRef.current;
+      if (m.portrait && hudRow && copyBand) {
+        const rigUp = GROUND.truck * world.clientHeight + 0.02 * world.clientWidth;
+        const rigDown = 0.02 * world.clientWidth;
+        const gap = 0.02 * m.stageH;
+        const hudBottom = hudRow.offsetTop + hudRow.offsetHeight;
+        const copyTop = copyBand.offsetTop;
+        let groundPx: number;
+        if (copyTop - hudBottom >= rigUp + rigDown + 2 * gap) {
+          m.earlyCopy = true;
+          groundPx = (hudBottom + copyTop + rigUp - rigDown) / 2;
+        } else {
+          groundPx = Math.min(
+            Math.max(STAGE.groundNarrow * m.stageH, hudBottom + gap + rigUp),
+            m.stageH - rigDown - gap,
+          );
+        }
+        m.ground = groundPx / m.stageH;
+      }
       const band = tiltBand(portrait.matches);
       m.bandCentre = band.centre;
       m.bandH = band.height;
@@ -1112,7 +1148,7 @@ export default function YardSection() {
         "hudA",
         Math.min(1 - seaTextOutE(sT), planeHud).toFixed(3),
       );
-      const band = m.portrait ? BAND_NARROW : BAND;
+      const band = m.earlyCopy ? BAND_NARROW : BAND;
       write(copyWrapRef.current, "opacity", "copy", bandOpacity(p, band).toFixed(3));
       // The chapter's own words take the wipe on the band's RISING edge, so
       // the reveal happens while the block fades in rather than after it.
@@ -1126,7 +1162,7 @@ export default function YardSection() {
         eyebrowToneRef.current,
         "color",
         "eyebrowTone",
-        toneColor(Math.max(splitTone(pin), curtain)),
+        toneColor(Math.max(splitTone(pin, m.ground), curtain)),
       );
       write(
         barRef.current,
@@ -1162,7 +1198,7 @@ export default function YardSection() {
                   ? 2
                   : chapterFor(
                       storyQ(self.progress),
-                      metricsRef.current.portrait ? BAND_NARROW : BAND,
+                      metricsRef.current.earlyCopy ? BAND_NARROW : BAND,
                     );
             setChapter((prev) => (prev === next ? prev : next));
           },
@@ -1226,6 +1262,32 @@ export default function YardSection() {
     // travel map must be restated from the real content width when it does.
     if (stripRef.current) observer.observe(stripRef.current);
     if (ghostRef.current) observer.observe(ghostRef.current);
+    // The copy band's height settles with the display face too, and the
+    // portrait ground is solved against it.
+    if (copyWrapRef.current) observer.observe(copyWrapRef.current);
+
+    // THE PIN'S HEIGHT IS A SNAPSHOT. ScrollTrigger locks the pinned stage at
+    // its refresh-time px height and, on touch devices, deliberately ignores
+    // height-only resizes — those are a phone's URL bar, and the stage is
+    // sized to the LARGE viewport precisely so that bar never changes it. A
+    // height-only resize that DOES move 100lvh is therefore a real one (a
+    // window, a split screen, an emulator), and the stage must be re-pinned,
+    // or it keeps its old height and paper shows beneath the frame.
+    const lvhProbe = document.createElement("div");
+    lvhProbe.setAttribute("aria-hidden", "true");
+    lvhProbe.style.cssText =
+      "position:fixed;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none";
+    document.body.appendChild(lvhProbe);
+    let lvhTimer = 0;
+    const onWindowResize = () => {
+      window.clearTimeout(lvhTimer);
+      // After ScrollTrigger's own debounced refresh has had its turn, so a
+      // resize it already handled is never refreshed twice.
+      lvhTimer = window.setTimeout(() => {
+        if (Math.abs(stage.offsetHeight - lvhProbe.offsetHeight) > 1) ScrollTrigger.refresh();
+      }, 320);
+    };
+    window.addEventListener("resize", onWindowResize);
 
     const progress = progressRef.current;
 
@@ -1233,6 +1295,9 @@ export default function YardSection() {
 
     return () => {
       observer.disconnect();
+      window.removeEventListener("resize", onWindowResize);
+      window.clearTimeout(lvhTimer);
+      lvhProbe.remove();
       ascVideo?.removeEventListener("loadeddata", onAscData);
       ctx.revert();
       progress.p = 0;
@@ -1295,7 +1360,7 @@ export default function YardSection() {
 
       <div
         ref={stageRef}
-        className="yard-live relative h-[100svh] w-full overflow-hidden bg-paper"
+        className="yard-live relative h-[100lvh] w-full overflow-hidden bg-paper"
         /* The tilt's rotateX reads as a camera move only under a lens: this is
            the vanishing depth for the side world laying back. */
         style={{ perspective: "1400px" }}
@@ -1332,7 +1397,11 @@ export default function YardSection() {
           planeRef={airPlaneRef}
         />
 
-        <SplitStage progress={() => progressRef.current.p} className="z-[1]" />
+        <SplitStage
+          progress={() => progressRef.current.p}
+          ground={() => metricsRef.current.ground}
+          className="z-[1]"
+        />
 
         {/* The roadside strip rides ON the night band (later in the DOM at the
             same depth) and UNDER the vehicle layers — the truck passes in
@@ -1478,6 +1547,9 @@ export default function YardSection() {
         <div
           ref={hudRef}
           className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-5 pt-24 sm:p-8 sm:pt-24 lg:p-14 lg:pt-28"
+          /* The stage is the LARGE viewport (see .yard-live); the words stay
+             inside the small one, so a phone's toolbar never sits on them. */
+          style={{ bottom: "calc(100lvh - 100svh)" }}
         >
           <div className="flex items-start justify-between gap-6">
             <SpeedReadout
@@ -1485,7 +1557,7 @@ export default function YardSection() {
               getDistance={() => hudDistanceKm(progressRef.current.p)}
               tone={() =>
                 Math.max(
-                  splitTone(progressRef.current.p),
+                  splitTone(progressRef.current.p, metricsRef.current.ground),
                   seaCurtainE(seaT(progressRef.current.p)),
                 )
               }
@@ -1535,6 +1607,7 @@ export default function YardSection() {
           /* The overhead run is still fading out under this card, so the
              sign-off carries its own paper wash rather than sitting on tarmac. */
           style={{
+            bottom: "calc(100lvh - 100svh)",
             background:
               "radial-gradient(62% 46% at 50% 50%, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.78) 58%, rgba(255,255,255,0) 100%)",
           }}

@@ -203,17 +203,18 @@ html.lenis {
     }
   }
 
-  /* PORTRAIT ARCS. Both domes are drawn with a 95svh semi-axis, and the
-     radial gradient is concentric with it — so on a phone, where svh is the
-     LONG axis, the colour ran across most of a screen before the section
-     under it began. Halving the semi-axis tightens that reach; the centre
-     moves by the same amount in the same direction, which keeps each arc's
-     apex exactly where it was (14svh into the intro's head, 116svh under
-     the outro's) and changes only how far the wash spreads from it. */
+  /* PORTRAIT ARCS. The intro keeps the desktop's own ellipse height and
+     centre — so its apex dips the same 14svh and its wash runs the same
+     ~106svh to paper, ending where the 130svh head ends — and widens only
+     the horizontal semi-axis. At 95vw a phone's arc rose to the head's top
+     edge within half a screen's width: a deep bowl, half a circle. At 146vw
+     the sides sit ~9svh down and the curve sags ~12% of the width, the
+     shallow horizon a desktop shows. (Halving the vertical axis instead, as
+     this block used to, turned the wash white by 70svh and left 60svh of
+     blank paper before the copy.) */
   @media (max-aspect-ratio: 1 / 1) {
     .intro-cover {
-      --arc-ry: 50svh;
-      --arc-cy: -36svh;
+      --arc-rx: 146vw;
     }
 
     .outro-cover {

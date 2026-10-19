@@ -80,7 +80,10 @@ export default function Footer() {
   }, [scope]);
 
   return (
-    <footer className="w-full bg-paper pt-20 text-ink md:pt-24">
+    // Positioned on the content layer like everything in <main>: the sticky
+    // hero (z-0) is positioned, so as the page ends it would otherwise paint
+    // over this unpositioned block — its downward black edge included.
+    <footer className="relative z-10 w-full bg-paper pt-20 text-ink md:pt-24">
       <div className="mx-auto w-full max-w-[1440px] px-5 md:px-8">
         {/* Row one: socials, the three link columns, the money. */}
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">

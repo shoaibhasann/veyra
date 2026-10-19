@@ -33,6 +33,8 @@ export default function VeyraBox({ boxRef, style, className }: VeyraBoxProps) {
     >
       <img
         src={SPRITE.box.src}
+        srcSet={SPRITE.box.srcSet}
+        sizes={SPRITE.box.sizes}
         alt=""
         decoding="async"
         draggable={false}

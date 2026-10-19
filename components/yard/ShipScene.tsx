@@ -230,7 +230,12 @@ export default function ShipScene({
         ref={wrapRef}
         className="absolute top-1/2 left-1/2 will-change-transform"
         style={{
-          width: `max(100vw, ${((SHIP_FRAME.w / SHIP_FRAME.h) * 100).toFixed(2)}svh)`,
+          /* lvh, like the stage it covers: the stage is the LARGE viewport
+             (a phone with its toolbar retracted), and a plate cover-fitted to
+             the small one left the bottom strip of that stage uncovered —
+             while the rig, solving its zoom and slot against the stage's own
+             height, would have placed the hero box off the footage. */
+          width: `max(100vw, ${((SHIP_FRAME.w / SHIP_FRAME.h) * 100).toFixed(2)}lvh)`,
           aspectRatio: `${SHIP_FRAME.w} / ${SHIP_FRAME.h}`,
           transform: "translate(-50%, -50%)",
         }}

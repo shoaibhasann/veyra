@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import {
   BEAT,
   DRIVE,
+  STAGE,
   camGroundFrac,
   clamp01,
   runT,
@@ -48,12 +49,14 @@ const outCubic = (t: number) => 1 - Math.pow(1 - t, 3);
  * the follow it IS the ground line; and through the tilt it rides on up to
  * the road's far edge.
  */
-export function seamAt(p: number): number {
+export function seamAt(p: number, rest: number = STAGE.ground): number {
   const t = tiltT(p);
   if (t > 0) return tiltSeamFrac(t);
   const q = storyQ(p);
   if (q <= SPLIT.in) return 1;
-  const ground = camGroundFrac(q);
+  // `rest` is the rig's own ground line — a phone seats the world higher
+  // than the landscape 0.77, and the join must be the line the TYRES are on.
+  const ground = camGroundFrac(q, rest);
   if (q < SPLIT.hold) return lerp(1, ground, outCubic(span(q, SPLIT.in, SPLIT.hold)));
   return ground;
 }
@@ -66,8 +69,8 @@ export const bandBottomAt = (p: number) => tiltBandBottom(tiltT(p));
  * DRIVE.ground, which sits below the readout band — so the readout stays ink
  * on paper for the whole follow, like the reference's KM/H counter.
  */
-export function splitTone(p: number): number {
-  return clamp01((READOUT_BOTTOM - seamAt(p)) / (READOUT_BOTTOM - READOUT_TOP));
+export function splitTone(p: number, rest?: number): number {
+  return clamp01((READOUT_BOTTOM - seamAt(p, rest)) / (READOUT_BOTTOM - READOUT_TOP));
 }
 
 /**
@@ -80,6 +83,8 @@ export const isSplitActive = (p: number) => storyQ(p) > SPLIT.in && runT(p) < 0.
 export interface SplitStageProps {
   /** Yard progress, 0..1. Read every frame; never stored. */
   progress: () => number;
+  /** The rig's ground line, as a stage fraction. Read every frame. */
+  ground?: () => number;
   /** Placement in the stage's z-stack. Belongs under the vehicle layer. */
   className?: string;
 }
@@ -90,15 +95,17 @@ export interface SplitStageProps {
  * section (it needs the stage's metrics), painted between this band and the
  * vehicle layer.
  */
-export default function SplitStage({ progress, className }: SplitStageProps) {
+export default function SplitStage({ progress, ground, className }: SplitStageProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const nightRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLDivElement>(null);
 
   const progressRef = useRef(progress);
+  const groundRef = useRef(ground);
   useEffect(() => {
     progressRef.current = progress;
+    groundRef.current = ground;
   });
 
   useEffect(() => {
@@ -121,7 +128,7 @@ export default function SplitStage({ progress, className }: SplitStageProps) {
       write(root, "visibility", "vis", live ? "visible" : "hidden");
       if (!live) return;
 
-      const seam = seamAt(p);
+      const seam = seamAt(p, groundRef.current?.());
       const bottom = bandBottomAt(p);
 
       // Both bands are scaled, never resized — the seam is a compositor move.

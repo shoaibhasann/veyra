@@ -25,6 +25,8 @@ export default function MorphRig({ frameRefs }: MorphRigProps) {
           key={frame.src}
           ref={frameRefs[i]}
           src={frame.src}
+          srcSet={frame.srcSet}
+          sizes={frame.sizes}
           alt=""
           decoding="async"
           draggable={false}

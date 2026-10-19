@@ -54,6 +54,8 @@ export default function DoorStack() {
           >
             <img
               src={sprite.src}
+              srcSet={sprite.srcSet}
+              sizes={sprite.sizes}
               alt=""
               decoding="async"
               draggable={false}

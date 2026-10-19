@@ -80,6 +80,25 @@ Re-encode with:
 It uses `cwebp`, not ffmpeg — this machine's Homebrew ffmpeg has no libwebp and
 cannot write WebP at all. PNG masters are kept on disk; keep it that way.
 
+### Phone cuts (`*-sm.webp`)
+
+Every live-rig sprite has a phone-sized twin next to it: the 2720px canvases at
+**1024px**, the wheels and doors at **384px**. A browser keeps each sprite
+decoded at its full size, so the full set costs ~219 MB of bitmaps — on a phone
+that overruns the decoded-image cache, sprites are evicted mid-scroll, and an
+async-decoded one is skipped for the frame (the VEYRA box once vanished off its
+trailer while its CSS hairline stayed). The twins are served through
+`srcSet`/`sizes` built in `geometry.ts` (`cut` / `cutSmall`): a portrait window
+up to 600px wide asks for the small one, every other window is told the sprite
+draws at its full width and keeps exactly the image it always had.
+
+Regenerate after replacing a sprite (cwebp reads WebP directly):
+
+```bash
+cwebp -resize 1024 0 -q 86 -alpha_q 100 -m 6 public/assets/<name>.webp -o public/assets/<name>-sm.webp
+# wheels and doors: -resize 384 0
+```
+
 ### Cut-out warnings
 
 | File | Status |

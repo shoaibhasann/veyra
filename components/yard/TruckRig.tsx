@@ -49,6 +49,8 @@ export default function TruckRig({ bodyRef, wheelRefs }: TruckRigProps) {
 
       <img
         src={SPRITE.truck.src}
+        srcSet={SPRITE.truck.srcSet}
+        sizes={SPRITE.truck.sizes}
         alt=""
         width={SPRITE.truck.w}
         height={SPRITE.truck.h}
@@ -62,6 +64,8 @@ export default function TruckRig({ bodyRef, wheelRefs }: TruckRigProps) {
           key={i}
           ref={wheelRefs[i]}
           src={SPRITE.wheel.src}
+          srcSet={SPRITE.wheel.srcSet}
+          sizes={SPRITE.wheel.sizes}
           alt=""
           width={SPRITE.wheel.w}
           height={SPRITE.wheel.h}

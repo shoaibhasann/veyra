@@ -39,6 +39,8 @@ export default function SpreaderRig({ spreaderRef, cableRef }: SpreaderRigProps)
       >
         <img
           src={SPRITE.spreader.src}
+          srcSet={SPRITE.spreader.srcSet}
+          sizes={SPRITE.spreader.sizes}
           alt=""
           width={SPRITE.spreader.w}
           height={SPRITE.spreader.h}

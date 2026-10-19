@@ -97,6 +97,8 @@ export default function CraneRig({
         >
           <img
             src={SPRITE.craneBoom.src}
+            srcSet={SPRITE.craneBoom.srcSet}
+            sizes={SPRITE.craneBoom.sizes}
             alt=""
             width={SPRITE.craneBoom.w}
             height={SPRITE.craneBoom.h}
@@ -126,6 +128,8 @@ export default function CraneRig({
               the ticker and would overwrite it. */}
           <img
             src={SPRITE.boomSleeve.src}
+            srcSet={SPRITE.boomSleeve.srcSet}
+            sizes={SPRITE.boomSleeve.sizes}
             alt=""
             width={SPRITE.craneBoom.w}
             height={SPRITE.craneBoom.h}
@@ -138,6 +142,8 @@ export default function CraneRig({
 
         <img
           src={SPRITE.craneBody.src}
+          srcSet={SPRITE.craneBody.srcSet}
+          sizes={SPRITE.craneBody.sizes}
           alt=""
           width={SPRITE.craneBody.w}
           height={SPRITE.craneBody.h}
@@ -154,6 +160,8 @@ export default function CraneRig({
             key={i}
             ref={wheelRefs[i]}
             src={SPRITE.craneWheel.src}
+            srcSet={SPRITE.craneWheel.srcSet}
+            sizes={SPRITE.craneWheel.sizes}
             alt=""
             width={SPRITE.craneWheel.w}
             height={SPRITE.craneWheel.h}

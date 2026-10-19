@@ -185,9 +185,13 @@ export default function Hero() {
       gsap.set(root, { position: "relative" });
     });
 
-    // Mobile keeps today's in-flow behaviour (the markup only goes sticky at
-    // md+), so the scrub is created for md+ pointers only.
-    mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
+    // Every width now: a phone used to let the hero scroll away in flow, so
+    // the intro's transparent arc head showed the PAGE's paper through it —
+    // a white half-moon over a dark hero instead of the horizon rising out of
+    // space. Sticky at every width puts the hero behind that head, as on a
+    // desktop, and the copy has to leave the same way or it would show
+    // through the arc while the card rises.
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
       const tl = gsap.timeline({
         defaults: { ease: "power1.in" },
         scrollTrigger: {
@@ -232,11 +236,14 @@ export default function Hero() {
       /* The hero drives the wipe itself, on its load timeline — the
          site-wide scanner must not claim these lines a second time. */
       data-reveal-skip
-      // Sticky (md+) so the intro section slides up OVER the hero — same
-      // 100svh in the flow, so no downstream trigger moves. z-0 keeps it under
-      // the z-10 content layer in page.tsx; the nav is fixed at z-30+. The
-      // exit effect flips position back to relative under reduced motion.
-      className="relative z-0 h-[100svh] w-full overflow-hidden bg-[#050505] text-paper md:sticky md:top-0"
+      // Sticky so the intro section slides up OVER the hero — same 100svh in
+      // the flow, so no downstream trigger moves. z-0 keeps it under the z-10
+      // content layer in page.tsx; the nav is fixed at z-30+. The exit effect
+      // flips position back to relative under reduced motion. The shadow is
+      // the hero's own black carried one more strip down: on a phone whose
+      // URL bar has collapsed the viewport outgrows 100svh, and the arc head
+      // above the card must still find space behind it, not paper.
+      className="sticky top-0 z-0 h-[100svh] w-full overflow-hidden bg-[#050505] text-paper shadow-[0_12svh_0_0_#050505]"
     >
       {/* Starfield — two static repeating layers, kept extremely subtle. */}
       <div aria-hidden className="hero-stars-far pointer-events-none absolute inset-0" />

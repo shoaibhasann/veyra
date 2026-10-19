@@ -50,6 +50,8 @@ export default function TruckTopRig({ wrapRef, tractorRef }: TruckTopRigProps) {
         <img
           ref={tractorRef}
           src={SPRITE.truckTop.src}
+          srcSet={SPRITE.truckTop.srcSet}
+          sizes={SPRITE.truckTop.sizes}
           alt=""
           width={SPRITE.truckTop.w}
           height={SPRITE.truckTop.h}
@@ -72,6 +74,8 @@ export default function TruckTopRig({ wrapRef, tractorRef }: TruckTopRigProps) {
         >
           <img
             src={SPRITE.containerTop.src}
+            srcSet={SPRITE.containerTop.srcSet}
+            sizes={SPRITE.containerTop.sizes}
             alt=""
             decoding="async"
             draggable={false}
